@@ -36,7 +36,7 @@ async def check_163_song_url( id, songName, singerName, url):
 ## mobile 方法获取播放歌曲，获取flac,mp3
 async def get_kuwo_music_url( kuwo_musicid):
     try:
-        mobi_url = 'http://mobi.kuwo.cn/mobi.s?f=kuwo&q=%s' % base64_encrypt('corp=kuwo&p2p=1&' + 'type=convert_url2&sig=0&format=flac|mp3&rid=%s' % kuwo_musicid)
+        mobi_url = 'http://mobi.kuwo.cn/mobi.s?f=kuwo&q=%s' % base64_encrypt('corp=kuwo&p2p=1&' + 'type=convert_url2&sig=0&format=mp3&rid=%s' % kuwo_musicid)
         #res = requests.get(url=mobi_url)
         connector = aiohttp.TCPConnector(verify_ssl=False)
         async with aiohttp.ClientSession(connector=connector) as session2:
