@@ -10,6 +10,8 @@ from homeassistant.const import (STATE_IDLE, STATE_PAUSED, STATE_PLAYING, STATE_
 from homeassistant.components.media_player.errors import BrowseError
 from .browse_media import build_item_response, library_payload
 
+from .api_kuwo import check_163_song_url, search_kuwo_music_by_keyword
+
 # SUPPORT_TURN_ON | SUPPORT_TURN_OFF | 
 SUPPORT_FEATURES = SUPPORT_PAUSE | SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_SELECT_SOUND_MODE | \
     SUPPORT_PLAY_MEDIA | SUPPORT_PLAY | SUPPORT_NEXT_TRACK | \
@@ -484,7 +486,7 @@ class MediaPlayer(MediaPlayerEntity):
         try:
             # 如果没有url则下一曲（如果超过3个错误，则停止）
             # 如果是云音乐播放列表 并且格式不是mp3不是m4a，则下一曲
-            if url is None or (media_type == 'music_load' and url.find(".mp3") < 0 and url.find('.m4a') < 0):
+            if url is None or (media_type == 'music_load' and url.find(".mp3") < 0 and url.find(".flac") < 0  and url.find('.m4a') < 0):
                self.notify("没有找到【" + self._media_name + "】的播放链接，自动为您跳到下一首", "error")
                self.error_count = self.error_count + 1
                if self.error_count < 3:
@@ -621,7 +623,8 @@ class MediaPlayer(MediaPlayerEntity):
             self._media_album_name = music_info['album']
         # 查看是否加入喜欢
         self.favourite = self.api_config.is_love_playlist(_id, _type)
-        
+        if 'duration' in music_info and music_info['duration'] != 0 :
+            self._media_duration = music_info['duration']
         if _type == 'url':
             # 如果传入的是能直接播放的音频
             return music_info['url']
@@ -648,6 +651,19 @@ class MediaPlayer(MediaPlayerEntity):
             return url
 
         url = await self.api_music.get_redirect_url(music_info['url'])
+                
+        # 如果传入的是能直接播放的音频
+        #if music_info['url'].startswith('https://music.163.com/song/media/outer/url'):
+            #url = await check_163_song_url(_id, music_info['song'], music_info['singer'], music_info['url'])
+            #self.log("【替换前url为：】:%s", url)
+            #music_info['url'] = url
+            # 如果没有url，则去kuwo搜索
+        if url == None:
+            url = await search_kuwo_music_by_keyword(_id,music_info['song'], music_info['singer'])
+            music_info['url'] = url
+        else:
+            music_info['url'] = url
+        self.log("【替换后url为：】:%s", url)
         # 如果没有url，则去咪咕搜索
         if url == None:
             url = await self.api_music.migu_search(music_info['song'], music_info['singer'])

@@ -35,7 +35,7 @@ class MediaPlayerMPD():
             self.timer = threading.Timer(1, self.update)
             self.timer.start()
         except Exception as e:
-            print(e)
+            print((e))
             self.is_support = False
 
     def _connect(self):
@@ -48,7 +48,7 @@ class MediaPlayerMPD():
                 self._client.password(config['mpd_password'])
             self.log('MPD服务连接成功')
         except Exception as ex:
-            print(ex)
+            print((ex))
             return
 
         self._is_connected = True
@@ -78,29 +78,66 @@ class MediaPlayerMPD():
 
             if self.is_tts == False:
                 self._status = self._client.status()
+                if self._status == None:
+                    return None
                 # currentsong = self._client.currentsong()
-                position = self._status.get("time")
-                media_position = 0
-                media_duration = 0
+                # position = self._status.get("time")
+                position = self._status.get("elapsed")
                 # 读取音乐时长和进度
-                if isinstance(position, str) and ':' in position:
-                    arr = position.split(':')
-                    media_position = int(arr[0])
-                    media_duration = int(arr[1])
-                    # 判断是否下一曲
-                    if media_duration > 0:
-                        # print("当前进度：%s，总时长：%s"%(media_position, media_duration))
-                        if media_duration - media_position <= 3:
-                            print('执行下一曲方法')
-                            if self._media is not None and self.state == 'playing' and self.is_on == True:
-                                self.state = 'idle'
-                                self._media.media_end_next()
-                # print("当前进度：%s，总时长：%s"%(media_position, media_duration))
-                self.media_position = media_position
-                self.media_duration = media_duration
+                media_position = 0
+                #media_duration = 0
+                if position is None:
+                    position = self._status.get("time")
+                    if isinstance(position, str) and ":" in position:
+                        media_position = position.split(":")[0]
+                        media_duration = position.split(":")[1]
+                        if media_position is not None:
+                            self.media_position = media_position
+                        if media_duration is not None:
+                            self.media_duration = media_duration
+                        else:
+                            self.media_duration = self._media._media_duration 
+                            
+                if position is not None :
+                    media_position = int(float(position))
+                    string_duration = self._status.get("duration")
+                    if media_position is not None:
+                        self.media_position = media_position
+                    if string_duration is not None:
+                        self.media_duration = int(float(string_duration))
+                        #self._media._media_duration = self.media_duration
+                    else:
+                        self.media_duration = self._media._media_duration 
+                        
+                # 假如播放器的区间为0
+                if self._media._media_duration == 0:
+                    self._media._media_duration = self.media_duration
+                if  media_position != 0:
+                    self._media._media_position = media_position
+                    self._media._media_position_updated_at = datetime.datetime.now()    
+                # 判断是否下一曲
+                self.log('当前进度：'+ str(media_position)  +'总时长:'+str(self.media_duration))
+                if self.media_duration is not None and self.media_duration > 0:
+                    # print("当前进度：%s，总时长：%s"%(media_position, media_duration))
+                    if self.media_duration - media_position <= 3:
+                        #self.log('剩余3s，下一曲方法')
+                        if self._media is not None and self.state == 'playing' and self.is_on == True:
+                            self.state = 'idle'
+                            self.log('执行下一曲方法')
+                            
+                            self.media_duration = 0 
+                            self.media_duration = 0
+                            self._media._media_position = 0
+                            self._media._media_duration = 0
+                            self._media._media_position_updated_at = datetime.datetime.now()   
+                            self._media.media_end_next()
+                            
+                #print("MPD当前进度：%s，总时长：%s"%(media_position, media_duration))
+                
                 self.media_position_updated_at = datetime.datetime.now()
         except Exception as e:
-            print('出现异常', e)
+            self.log('出现异常:'+ str(e))
+            #print('出现异常', e)
             self._disconnect()
         
         # 递归调用自己
@@ -122,6 +159,8 @@ class MediaPlayerMPD():
         # 加载URL
         url = url.replace("https://", "http://")
         try:
+            if self._status == None:
+                return None
             self._client.clear()
             self._client.add(url)
             self._client.play()
@@ -136,19 +175,31 @@ class MediaPlayerMPD():
             self.state = 'playing'
         
     def play(self):
+        if self._status == None:
+            return None
         # 播放
-        self.state = 'playing'
-        self._client.pause(0)
-    
+        try:
+            self.state = 'playing'
+            self._client.pause(0)
+        except Exception as e:
+            self.log('出现异常1:'+ str(e))
     def pause(self):
+        if self._status == None:
+            return None
         # 暂停
-        self.state = 'paused'
-        self._client.pause(1)
-    
+        try:
+            self.state = 'paused'
+            self._client.pause(1)
+        except Exception as e:
+            self.log('出现异常2:'+ str(e))
     def seek(self, position):
+        if self._status == None:
+            return None
         # 设置进度
-        self._client.seekcur(position)
-
+        try:
+            self._client.seekcur(position)
+        except Exception as e:
+            self.log('出现异常3:'+ str(e))
     def mute_volume(self, mute):
         # 静音
         if self._status is not None and "volume" in self._status:
@@ -181,18 +232,22 @@ class MediaPlayerMPD():
                 self._client.setvol(current_volume - 5)
 
     def stop(self):
+        if self._status == None:
+            return None
         # 停止
-        self.timer.cancel()
-        self._client.stop()
-        self._client.disconnect()
-
+        try:
+            self.timer.cancel()
+            self._client.stop()
+            self._client.disconnect()
+        except Exception as e:
+            self.log('出现异常4:'+ str(e))
     def set_rate(self, rate):
         # 设置播放速度
         return 1
 
     def log(self, msg):
         if self._media is not None:
-            self._media.log(msg, 'source_mpd')
+            self._media.log(msg)
 '''
 mm = MediaPlayerMPD({'mpd_host': '192.168.1.113'})
 if mm.is_support:

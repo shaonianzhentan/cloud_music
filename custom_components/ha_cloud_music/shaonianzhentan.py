@@ -8,7 +8,8 @@ async def fetch_info(url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
         'Referer': f'{p.scheme}//{p.netloc}'
     }
-    async with aiohttp.ClientSession(headers=headers) as session:
+    connector = aiohttp.TCPConnector(verify_ssl=False)
+    async with aiohttp.ClientSession(headers=headers,connector=connector) as session:
         async with session.get(url) as response:
             return {
               'status': response.status,

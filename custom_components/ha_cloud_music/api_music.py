@@ -58,7 +58,8 @@ class ApiMusic():
         try:
             global COOKIES            
             jar = aiohttp.CookieJar(unsafe=True)
-            async with aiohttp.ClientSession(headers=HEADERS, cookies=COOKIES, cookie_jar=jar) as session:
+            connector = aiohttp.TCPConnector(verify_ssl=False)
+            async with aiohttp.ClientSession(headers=HEADERS, cookies=COOKIES, cookie_jar=jar, connector=connector) as session:
                 async with session.get(link) as resp:
                     # 如果是登录，则将登录状态保存起来
                     if '/login' in url:
@@ -83,7 +84,8 @@ class ApiMusic():
         try:
             headers = {'Referer': url}
             headers.update(HEADERS)
-            async with aiohttp.ClientSession(headers=headers) as session:
+            connector = aiohttp.TCPConnector(verify_ssl=False)
+            async with aiohttp.ClientSession(headers=headers, connector=connector) as session:
                 async with session.get(url) as resp:
                     # 喜马拉雅返回的是文本内容
                     if 'https://mobile.ximalaya.com/mobile/' in url:
@@ -103,7 +105,8 @@ class ApiMusic():
 
     ###################### 获取音乐播放URL ######################    
     async def get_http_code(self, url):
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(verify_ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(url) as response:
                 return response.status
 
@@ -490,7 +493,8 @@ class ApiMusic():
 
     async def play_news(self, name):
         hass = self.hass
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(verify_ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get('https://app.leting.io/auth?uid=' + UID + '&appid=f03268abb256885da72e046b556a588c&app_secret=a595a43547ed414e2e96378a338f2f21&logid=' + LOG_ID) as res:
                 r = await res.json()
                 token = r['data']['token']
@@ -543,7 +547,8 @@ class ApiMusic():
 
     async def play_fm(self, name):
         hass = self.hass
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(verify_ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get('https://search.qingting.fm/v3/search?categoryid=0&k=' + name + '&page=1&pagesize=15&include=all') as res:
                 r = await res.json()
                 docs = r['data']['data']['docs']
