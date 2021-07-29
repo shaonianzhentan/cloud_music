@@ -9,21 +9,6 @@ from .kwDES import base64_encrypt
 import time
 
 
-# 获取HTTP请求信息
-# async def fetch_info(url):
-#     p = urlparse(url)
-#     headers = {
-#         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-#         'Referer': f'{p.scheme}//{p.netloc}'
-#     }
-#     connector = aiohttp.TCPConnector(verify_ssl=False)
-#     async with aiohttp.ClientSession(headers=headers,connector=connector) as session:
-#         async with session.get(url) as response:
-#             return {
-#               'status': response.status,
-#               'url': str(response.url)
-#             }
-            
 ###################### 获取酷我音乐 ######################
 # 获取网易云 检测是否可用 
 async def check_163_song_url( id, songName, singerName, url):
@@ -44,14 +29,14 @@ async def check_163_song_url( id, songName, singerName, url):
     if check['success']:
         return url
     else:
-        url = await self.search_kuwo_music_by_keyword(id, songName, singerName)
+        url = await search_kuwo_music_by_keyword(id, songName, singerName)
     return url
     '''
 
 ## mobile 方法获取播放歌曲，获取flac,mp3
 async def get_kuwo_music_url( kuwo_musicid):
     try:
-        mobi_url = 'http://mobi.kuwo.cn/mobi.s?f=kuwo&q=%s' % base64_encrypt('corp=kuwo&p2p=1&' + 'type=convert_url2&sig=0&format=flac|mp3&rid=%s' % kuwo_musicid)
+        mobi_url = 'http://mobi.kuwo.cn/mobi.s?f=kuwo&q=%s' % base64_encrypt('corp=kuwo&p2p=1&' + 'type=convert_url2&sig=0&format=mp3&rid=%s' % kuwo_musicid)
         #res = requests.get(url=mobi_url)
         connector = aiohttp.TCPConnector(verify_ssl=False)
         async with aiohttp.ClientSession(connector=connector) as session2:
