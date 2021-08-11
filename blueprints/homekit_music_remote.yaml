@@ -1,0 +1,73 @@
+blueprint:
+  name: 云音乐iOS遥控
+  description: 云音乐插件iOS遥控器
+  domain: automation
+  source_url: https://github.com/shaonianzhentan/xiaomi_tv
+  input:
+    select:
+      name: 选择键
+      description: 选择 select
+      default: []
+      selector:
+        action: {}
+    back:
+      name: 返回键
+      description: 返回 back
+      default: []
+      selector:
+        action: {}
+    information:
+      name: 信息键
+      description: 信息 information
+      default: []
+      selector:
+        action: {}
+trigger:
+- platform: event
+  event_type: homekit_tv_remote_key_pressed
+  event_data:
+    entity_id: media_player.yun_yin_le
+action:
+- variables:
+    entity_id: media_player.yun_yin_le
+    command: '{{ trigger.event.data.key_name }}'
+- choose:
+  - conditions:
+    - '{{ command == "play_pause" }}'
+    sequence:
+      - service: media_player.media_play_pause
+        data:
+          entity_id: '{{ entity_id }}'
+  - conditions:
+    - '{{ command == "arrow_left" }}'
+    sequence:
+      - service: media_player.media_previous_track
+        data:
+          entity_id: '{{ entity_id }}'
+  - conditions:
+    - '{{ command == "arrow_right" }}'
+    sequence:
+      - service: media_player.media_next_track
+        data:
+          entity_id: '{{ entity_id }}'
+  - conditions:
+    - '{{ command == "arrow_up" }}'
+    sequence:
+      - service: media_player.volume_up
+        data:
+          entity_id: '{{ entity_id }}'
+  - conditions:
+    - '{{ command == "arrow_down" }}'
+    sequence:
+      - service: media_player.volume_down
+        data:
+          entity_id: '{{ entity_id }}'
+  - conditions:
+    - '{{ command == "select" }}'
+    sequence: !input 'select'
+  - conditions:
+    - '{{ command == "back" }}'
+    sequence: !input 'back'
+  - conditions:
+    - '{{ command == "information" }}'
+    sequence: !input 'information'

@@ -10,7 +10,6 @@ COOKIES = {'os': 'osx'}
 
 # 乐听头条配置
 UID = str(uuid.uuid4()).replace('-','')
-LOG_ID = '1234'
 
 class ApiMusic():
 
@@ -493,12 +492,14 @@ class ApiMusic():
 
     async def play_news(self, name):
         hass = self.hass
+        leting_headers = {"uid":UID, "logid": UID, "token": ''}
         connector = aiohttp.TCPConnector(verify_ssl=False)
         async with aiohttp.ClientSession(connector=connector) as session:
-            async with session.get('https://app.leting.io/auth?uid=' + UID + '&appid=f03268abb256885da72e046b556a588c&app_secret=a595a43547ed414e2e96378a338f2f21&logid=' + LOG_ID) as res:
+            async with session.get('https://app.leting.io/app/auth?uid=' + UID \
+                + '&appid=a435325b8662a4098f615a7d067fe7b8&ts=1628297581496&sign=4149682cf40c2bf2efcec8155c48b627&v=v9&channel=huawei', headers=leting_headers) as res:
                 r = await res.json()
-                token = r['data']['token']
-                leting_headers = {"uid":UID, "logid": LOG_ID, "token": token}
+                # print(r)
+                leting_headers['token'] = r['data']['token']                
                 _newlist = []
                 # 热点
                 _list = await self._get_news(session, leting_headers, 'f3f5a6d2-5557-4555-be8e-1da281f97c22')

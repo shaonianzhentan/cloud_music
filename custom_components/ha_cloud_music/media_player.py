@@ -259,6 +259,10 @@ class MediaPlayer(MediaPlayerEntity):
         return attr
 
     @property
+    def device_class(self):
+        return 'tv'
+
+    @property
     def media_image_url(self):
         # 当前播放的音乐封面地址.
         if self._media_image_url != None:            
