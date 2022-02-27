@@ -2,7 +2,7 @@ blueprint:
   name: 云音乐iOS遥控
   description: 云音乐插件iOS遥控器
   domain: automation
-  source_url: https://github.com/shaonianzhentan/xiaomi_tv
+  source_url: https://github.com/shaonianzhentan/ha_cloud_music/blob/master/blueprints/homekit_music_remote.yaml
   input:
     select:
       name: 选择键

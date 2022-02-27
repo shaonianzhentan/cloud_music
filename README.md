@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/Home-Assistant-%23049cdb)](https://www.home-assistant.io/)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
-![visit](https://visitor-badge.glitch.me/badge?page_id=shaonianzhentan.ha_cloud_music&left_text=visit)
+![visit](https://visitor-badge.laobi.icu/badge?page_id=shaonianzhentan.ha_cloud_music&left_text=visit)
 ![forks](https://img.shields.io/github/forks/shaonianzhentan/ha_cloud_music)
 ![stars](https://img.shields.io/github/stars/shaonianzhentan/ha_cloud_music)
 ![license](https://img.shields.io/github/license/shaonianzhentan/ha_cloud_music)
@@ -26,10 +26,11 @@ recorder:
 
 ## 更新日志
 
-### V4.7.3
+### V4.7.4
 - 移除uid参数，可自动获取
 - TTS替换成微软Edge服务
 - 只支持集成安装
+- 增加`家庭助理Windows应用`源播放器
 
 ### V4.7（参数重大变更）
 - 网页播放器集成在卡片中

@@ -34,6 +34,7 @@ from .source_web import MediaPlayerWEB
 from .source_vlc import MediaPlayerVLC
 from .source_mpd import MediaPlayerMPD
 from .source_other import MediaPlayerOther
+from .source_windows import MediaPlayerWindows
 
 
 async def async_setup_entry(hass, entry, async_add_entities) -> None:
@@ -162,7 +163,7 @@ class MediaPlayer(MediaPlayerEntity):
         self._timer_enable = True
         self.is_notify = True
 
-        _sound_mode_list = ['网页播放器']
+        _sound_mode_list = ['网页播放器', 'Windows应用']
             
         mpd_host = config.get('mpd_host', '')
         # 如果是Docker环境，则不显示VLC播放器
@@ -537,9 +538,10 @@ class MediaPlayer(MediaPlayerEntity):
                 print(ex)
                 self._media_player = None
                 self.notify(self._sound_mode + "连接异常", "error")
-
         if sound_mode == '网页播放器':
             self._media_player = MediaPlayerWEB(self._config, self)
+        elif sound_mode == 'Windows应用':
+            self._media_player = MediaPlayerWindows(self._config, self)            
         elif sound_mode == 'MPD播放器':
             # 判断是否配置mpd_host
             if 'mpd_host' not in self._config:
