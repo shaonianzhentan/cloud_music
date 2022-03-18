@@ -101,7 +101,7 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
     # 监听语音小助手的文本
     if is_voice == True:
         _ApiVoice = ApiVoice(hass, mp.api_music)
-        hass.bus.async_listen('ha_voice_text_event', _ApiVoice.text_event)
+        hass.bus.async_listen('conversation', _ApiVoice.text_event)
 
     ################### 注册服务 ################### 
 
