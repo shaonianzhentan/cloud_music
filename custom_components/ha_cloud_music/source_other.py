@@ -41,7 +41,7 @@ class MediaPlayerOther():
                 # print("当前进度：%s，总时长：%s"%(media_position, media_duration))
                 # 判断是否下一曲
                 if media_duration > 0:
-                    if media_duration - media_position <= 3:
+                    if media_duration - media_position <= 5 or (media_position == 0 and entity.state == 'idle'):
                         print('执行下一曲方法')
                         if self._media is not None and self.state == 'playing' and self.is_tts == False and self.is_on == True and self.count > 0:
                             self.count = -5
