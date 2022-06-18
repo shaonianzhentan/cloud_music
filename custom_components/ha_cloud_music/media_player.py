@@ -31,8 +31,8 @@ from homeassistant.const import (
     STATE_UNAVAILABLE
 )
 
-from .const import DOMAIN
 from .manifest import manifest
+DOMAIN = manifest.domain
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,16 +55,13 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     def __init__(self, hass):
         self.hass = hass
+        self._attr_unique_id = manifest.documentation
         self._state =  STATE_OFF
         self._attributes = {}
 
     @property
     def name(self):
         return manifest.name
-
-    @property
-    def unique_id(self):
-        return self.info['device_id']
 
     @property
     def volume_level(self):
@@ -115,7 +112,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             },
             'name': self.name,
             'manufacturer': 'shaonianzhentan',
-            'model': manifest.version,
+            'model': 'CloudMusic',
             'sw_version': manifest.version,
             # "via_device": (DOMAIN, manifest.version)
         }
