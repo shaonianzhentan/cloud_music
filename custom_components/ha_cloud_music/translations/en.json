@@ -1,0 +1,17 @@
+{
+    "title": "云音乐",
+    "config": {
+        "abort": {
+            "single_instance_allowed": "仅允许单个配置"
+        },
+        "step": {
+            "user": {
+                "title": "授权登录",
+                "description": "请联系开发者获取",
+                "data": {
+                    "token": "授权码"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,51 @@
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: silver;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.layout {
+    height: 100vh;
+}
+
+.header {
+    height: 56px;
+    padding: 0;
+    background: #03a9f4;
+}
+
+.pageHeader {
+    padding: 8px 20px;
+
+    :global(.ant-page-header-heading-title) {
+        color: white;
+        font-weight: 500;
+    }
+}
+
+.sider {
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    &:hover {
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+    }
+}
+
+.footer {
+    border-top: 1px solid #ddd;
+    padding: 15px 36px;
+}

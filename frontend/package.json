@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@ant-design/pro-layout": "^6.5.0",
+    "antd": "^4.21.3",
     "react": "17.x",
     "react-dom": "17.x"
   },
@@ -32,6 +33,7 @@
     "lint-staged": "^10.0.7",
     "prettier": "^2.2.0",
     "typescript": "^4.1.2",
+    "umi": "^3.5.26",
     "yorkie": "^2.0.0"
   }
 }

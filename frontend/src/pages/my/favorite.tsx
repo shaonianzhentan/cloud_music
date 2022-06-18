@@ -1,10 +1,10 @@
 import React from 'react';
-import styles from './index.less';
+import styles from './favorite.less';
 
 export default function Page() {
   return (
     <div>
-      <h1 className={styles.title}>Page my/index</h1>
+      <h1 className={styles.title}>Page my/favorite</h1>
     </div>
   );
 }
