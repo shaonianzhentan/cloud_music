@@ -33,13 +33,13 @@ class MediaPlayerWebSocket():
         # 监听web播放器的更新
         self.hass.components.websocket_api.async_register_command(
             CLOUD_MUSIC_SERVER,
-            self.update,
+            self.async_update,
             SCHEMA_WEBSOCKET
         )
 
     async def async_update(self, hass, connection, msg):
             data = msg['data']
-            # print(data)
+            print(data)
             cloud_music = hass.data[manifest.domain]
             # 消息类型
             action = data.get('action')
@@ -48,7 +48,7 @@ class MediaPlayerWebSocket():
                 media_position = data.get('media_position')
                 if media_position is not None:
                     self.media_player._attr_media_position = media_position
-                    self.media_player._attr_media_position_updated_at = datetime.datetime.now()                    
+                    self.media_player._attr_media_position_updated_at = datetime.datetime.now()
                 # 总时长
                 media_duration = data.get('media_duration')
                 if media_duration is not None:
@@ -62,55 +62,53 @@ class MediaPlayerWebSocket():
                 if is_volume_muted is not None:
                     self.media_player._attr_is_volume_muted = is_volume_muted
             elif action == 'pause':
-                self.media_player._state = STATE_PAUSED
+                self.media_player._attr_state = STATE_PAUSED
             elif action == 'play':
-                self.media_player._state = STATE_PLAYING
-            elif action == 'previous':
-                cloud_music.previous()
-            elif action == 'next':
-                cloud_music.next()
+                self.media_player._attr_state = STATE_PLAYING
             
             await self.media_player.async_update()
 
-    def play(self):
+    async def async_media_play(self):
         # 播放
         self.fire_event({"action": "play"})
     
-    def pause(self):
+    async def async_media_pause(self):
         # 暂停
         self.fire_event({"action": "pause"})
     
-    def seek(self, position):
+    async def async_media_seek(self, position):
         # 设置进度
         self.fire_event({"media_position": position})
 
-    def mute_volume(self, mute):
+    async def async_mute_volume(self, mute):
         # 静音
         self.fire_event({"is_volume_muted": mute})
 
-    def set_volume_level(self, volume):
+    async def async_set_volume_level(self, volume):
         # 设置音量
         self.fire_event({"volume_level": volume})
 
-    def volume_up(self):
+    async def async_volume_up(self):
         # 增加音量
         current_volume = self.volume_level
         if current_volume < 1:
             self.set_volume_level(current_volume + 0.1)
 
-    def volume_down(self):
+    async def async_volume_down(self):
         # 减少音量
         current_volume = self.volume_level
         if current_volume > 0:
             self.set_volume_level(current_volume - 0.1)
 
-    def stop(self):
-        # 停止
-        self.fire_event({"action": "pause"})
-
-    def set_rate(self, rate):
-        # 设置播放速度
-        return 1
+    async def async_play_media(self, media_type, media_id):
+        print(media_type, media_id)
+        self.fire_event({
+            "play_media": media_id,
+            "media_image_url": self.media_player._attr_media_image_url,
+            "media_title": self.media_player._attr_media_title,
+            "media_artist": self.media_player._attr_media_artist,
+            "media_album_name": self.media_player._attr_media_album_name
+        })
 
     def fire_event(self, data):
         self.hass.bus.fire(CLOUD_MUSIC_CLIENT, data)

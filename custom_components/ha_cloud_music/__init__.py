@@ -1,6 +1,7 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
+from homeassistant.const import CONF_URL
 
 from .const import PLATFORMS
 from .manifest import manifest
@@ -11,6 +12,7 @@ DOMAIN = manifest.domain
 CONFIG_SCHEMA = cv.deprecated(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+
     hass.http.register_view(HttpView)
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)

@@ -1,8 +1,16 @@
+import enum
+
+class MusicSource(enum.Enum):
+
+    URL = 1
+    PLAYLIST = 2
+    DJRADIO = 3
+    XIMALAYA = 4
 
 
 class MusicInfo:
 
-    def __init__(self, id, song, singer, album, duration, url, picUrl) -> None:
+    def __init__(self, id, song, singer, album, duration, url, picUrl, source) -> None:
         self._id = id
         self._song = song
         self._singer = singer
@@ -10,6 +18,11 @@ class MusicInfo:
         self._album = album
         self._url = url
         self._picUrl = picUrl
+        self._source = source
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def song(self):
@@ -30,3 +43,7 @@ class MusicInfo:
     @property
     def picUrl(self):
         return self._picUrl
+
+    @property
+    def source(self) -> MusicSource:
+        return self._source

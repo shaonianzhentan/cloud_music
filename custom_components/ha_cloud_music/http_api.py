@@ -28,4 +28,10 @@ async def http_get(url, COOKIES={}):
     jar = aiohttp.CookieJar(unsafe=True)
     async with aiohttp.ClientSession(headers=headers, cookies=COOKIES, cookie_jar=jar) as session:
         async with session.get(url) as resp:
-            return await resp.json()
+            result = await resp.json()
+            return result
+
+async def http_code(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return response.status

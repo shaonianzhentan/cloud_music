@@ -83,6 +83,7 @@ export default function Page({ children, location, route, history, match }: IRou
 
   // 播放全部
   const playAll = () => {
+    console.log(id)
     cloudMusicPost({
       act: 'playlist',
       id

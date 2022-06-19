@@ -5,7 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.components.media_player import MediaPlayerEntity
+from homeassistant.components.media_player import MediaPlayerEntity, MediaPlayerDeviceClass
 from homeassistant.components.media_player.const import (
     SUPPORT_BROWSE_MEDIA,
     SUPPORT_TURN_OFF,
@@ -23,6 +23,7 @@ from homeassistant.components.media_player.const import (
 )
 from homeassistant.const import (
     CONF_TOKEN, 
+    CONF_URL,
     CONF_NAME,
     STATE_OFF, 
     STATE_ON, 
@@ -32,6 +33,7 @@ from homeassistant.const import (
 )
 
 from .player.websocket import MediaPlayerWebSocket
+from .cloud_music import CloudMusic
 
 from .manifest import manifest
 DOMAIN = manifest.domain
@@ -48,39 +50,31 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    entities = [
-        CloudMusicMediaPlayer(hass)
-    ]
-    async_add_entities(entities, True)
+    data = entry.data
+    media_player = CloudMusicMediaPlayer(hass, CloudMusic(data.get(CONF_URL)))
+    hass.data[DOMAIN] = media_player
+    async_add_entities([ media_player ], True)
 
 class CloudMusicMediaPlayer(MediaPlayerEntity):
 
-    def __init__(self, hass):
+    def __init__(self, hass, cloud_music):
         self.hass = hass
-        self._state =  STATE_OFF
         self._attributes = {}
         # default attribute
+        self._attr_state =  STATE_OFF
         self._attr_name = manifest.name
         self._attr_unique_id = manifest.documentation
         self._attr_source_list = ['网页浏览器']
+        self._attr_sound_mode_list = []
+        self._attr_media_image_remotely_accessible = True
+        self._attr_device_class = MediaPlayerDeviceClass.TV.value
+        self._attr_supported_features = SUPPORT_FEATURES
         # source media player
         self._player = MediaPlayerWebSocket(self)
-
-    @property
-    def state(self):
-        return self._state
-
-    @property
-    def sound_mode_list(self):
-        return []
-
-    @property
-    def supported_features(self):
-        return SUPPORT_FEATURES
-
-    @property
-    def device_class(self):
-        return 'tv'
+        self.cloud_music = cloud_music
+        if len(cloud_music.playlist) > 0:
+            hass.async_create_task(self.async_load_music())
+            self._attr_state =  STATE_PAUSED
 
     @property
     def device_info(self):
@@ -102,44 +96,77 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         return []
 
     async def async_select_source(self, source):
-        pass
+        if self._attr_source_list.count(source) > 0:
+            self._attr_source = source
 
     async def async_select_source_mode(self, mode):
-        pass
+        if self._attr_sound_mode_list.count(mode) > 0:
+            self._attr_source_mode = mode
 
     async def async_turn_off(self):
-        print('小度小度')
+        self._attr_state = STATE_OFF
 
     async def async_turn_on(self):
-        pass
+        self._attr_state = STATE_ON
 
     async def async_volume_up(self):
         print('声音大一点')
+        await self._player.async_volume_up()
 
     async def async_volume_down(self):
         print('声音小一点')
+        await self._player.async_volume_down()
 
     async def async_mute_volume(self, mute):
-        pass
+        await self._player.async_mute_volume(mute)
 
     async def async_set_volume_level(self, volume):
         print(f'声音调到{volume * 100}')
+        await self._player.async_set_volume_level(mute)
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         print(media_id)
+        await self._player.async_play_media(media_type, media_id)
+        self._attr_state = STATE_PLAYING
 
     async def async_media_play(self):
-        print('播放')
+        self._attr_state = STATE_PLAYING
+        await self._player.async_media_play()
 
     async def async_media_pause(self):
-        print('暂停')
+        self._attr_state = STATE_PAUSED
+        await self._player.async_media_pause()
 
     async def async_media_next_track(self):
+        self._attr_state = STATE_PAUSED
         print('下一个')
+        self.cloud_music.next()
+        await self.async_load_music(True)
 
     async def async_media_previous_track(self):
+        self._attr_state = STATE_PAUSED
         print('上一下')
+        self.cloud_music.previous()
+        await self.async_load_music(True)
+
+    async def async_media_seek(self, position):
+        await self._player.async_media_seek(position)
 
     # 更新属性
     async def async_update(self):
         print('更新')
+
+    # 加载音乐
+    async def async_load_music(self, is_play=False):
+        music_info = await self.cloud_music.async_music_info()
+        if music_info is not None:
+            self._attr_media_image_url = music_info.picUrl
+            self._attr_media_album_name = music_info.album
+            self._attr_media_title = music_info.song
+            self._attr_media_artist = music_info.singer
+            self._attr_app_id = self.cloud_music.playindex
+            self._attr_app_name = music_info.singer
+            # 播放音乐
+            if is_play == True:
+                await self.async_play_media(music_info.source, music_info.url)
+        return music_info
