@@ -23,6 +23,8 @@ export default defineConfig({
         { path: '/my/local', component: '@/pages/my/local' },
         { path: '/my/playlist', component: '@/pages/my/playlist' },
         { path: '/my/radio', component: '@/pages/my/radio' },
+
+        { path: '/player/playlist', component: '@/pages/player/playlist' },
       ],
     }
   ],

@@ -11,7 +11,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE
 )
 
-from .manifest import manifest
+from ..manifest import manifest
 
 CLOUD_MUSIC_SERVER = "cloud_music_server"
 CLOUD_MUSIC_CLIENT = "cloud_music_client"

@@ -4,7 +4,6 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import PLATFORMS
 from .manifest import manifest
-from .cloud_music import CloudMusic
 from .http import HttpView
 
 DOMAIN = manifest.domain
@@ -12,7 +11,6 @@ DOMAIN = manifest.domain
 CONFIG_SCHEMA = cv.deprecated(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    hass.data[DOMAIN] = CloudMusic(hass)    
     hass.http.register_view(HttpView)
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)

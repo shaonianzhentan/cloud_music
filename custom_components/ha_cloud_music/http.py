@@ -13,11 +13,11 @@ class HttpView(HomeAssistantView):
 
     async def get(self, request):
         hass = request.app["hass"]
-        cloud_music = hass[DOMAIN]
+        cloud_music = hass.data[DOMAIN]
         query = request.query
         api = query.get('api')
-        data = await http_get(cloud_music.api_url + api)
-        return self.json({ 'code': 0, 'data': data})
+        data = await http_get(cloud_music.api_url + api, cloud_music.cookie)
+        return self.json(data)
 
     async def delete(self, request):
         hass = request.app["hass"]
@@ -26,10 +26,17 @@ class HttpView(HomeAssistantView):
 
     async def put(self, request):
         hass = request.app["hass"]
-        query = request.query        
+        query = request.query
         return self.json({ 'code': 0, 'msg': '创建成功'})
 
     async def post(self, request):
         hass = request.app["hass"]
-        query = request.query
+        cloud_music = hass.data[DOMAIN]
+        body = request.json()
+        id = body.get('id')
+        act = body.get('act')
+        if act == 'playlist':
+            cloud_music.load_playlist(id)
+            return self.json({ 'code': 0, 'msg': '正在播放歌单'})
+
         return self.json({ 'code': 0, 'msg': '保存成功'})

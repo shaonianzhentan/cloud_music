@@ -31,6 +31,8 @@ from homeassistant.const import (
     STATE_UNAVAILABLE
 )
 
+from .player.websocket import MediaPlayerWebSocket
+
 from .manifest import manifest
 DOMAIN = manifest.domain
 
@@ -55,49 +57,25 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     def __init__(self, hass):
         self.hass = hass
-        self._attr_unique_id = manifest.documentation
         self._state =  STATE_OFF
         self._attributes = {}
-
-    @property
-    def name(self):
-        return manifest.name
-
-    @property
-    def volume_level(self):
-        return 0.5
-
-    @property
-    def is_volume_muted(self):
-        return False
+        # default attribute
+        self._attr_name = manifest.name
+        self._attr_unique_id = manifest.documentation
+        self._attr_source_list = ['网页浏览器']
+        # source media player
+        self._player = MediaPlayerWebSocket(self)
 
     @property
     def state(self):
         return self._state
 
     @property
-    def assumed_state(self):
-        return True
-
-    @property
     def sound_mode_list(self):
         return []
 
     @property
-    def source_list(self):
-        return []
-
-    @property
-    def media_duration(self):
-        return 0
-
-    @property
-    def media_position(self):
-        return 0
-
-    @property
     def supported_features(self):
-        """Flag media player features that are supported."""
         return SUPPORT_FEATURES
 
     @property
@@ -113,8 +91,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             'name': self.name,
             'manufacturer': 'shaonianzhentan',
             'model': 'CloudMusic',
-            'sw_version': manifest.version,
-            # "via_device": (DOMAIN, manifest.version)
+            'sw_version': manifest.version
         }
 
     @property
@@ -124,11 +101,9 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         return []
 
-    # 选择应用
     async def async_select_source(self, source):
         pass
 
-    # 选择数据源
     async def async_select_source_mode(self, mode):
         pass
 
@@ -151,8 +126,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         print(f'声音调到{volume * 100}')
 
     async def async_play_media(self, media_type, media_id, **kwargs):
-        # print(media_id)
-        pass
+        print(media_id)
 
     async def async_media_play(self):
         print('播放')

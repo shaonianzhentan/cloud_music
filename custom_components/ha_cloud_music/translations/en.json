@@ -6,10 +6,10 @@
         },
         "step": {
             "user": {
-                "title": "授权登录",
-                "description": "请联系开发者获取",
+                "title": "接口配置",
+                "description": "请自行部署，或联系开发者获取",
                 "data": {
-                    "token": "授权码"
+                    "url": "网易云音乐API"
                 }
             }
         }

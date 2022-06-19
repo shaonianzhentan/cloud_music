@@ -2,7 +2,7 @@ import { IRouteComponentProps } from 'umi'
 import { PageHeader, Layout, Menu } from 'antd'
 import type { MenuProps } from 'antd';
 import styles from './index.less';
-import { UserOutlined, BarChartOutlined, OrderedListOutlined, BarsOutlined } from '@ant-design/icons';
+import { UserOutlined, BarChartOutlined, OrderedListOutlined, BarsOutlined, HomeOutlined } from '@ant-design/icons';
 import PlayControl from '../components/layouts/PlayControl'
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -62,6 +62,7 @@ export default function LayoutIndex({ children, location, route, history, match 
                 <Header className={styles.header}>
                     <PageHeader
                         className={styles.pageHeader}
+                        backIcon={<HomeOutlined style={{ fontSize: '20px', color: 'white' }} />}
                         onBack={() => null}
                         title="云音乐"
                     />
@@ -76,7 +77,7 @@ export default function LayoutIndex({ children, location, route, history, match 
                             onSelect={selectPath}
                         />
                     </Sider>
-                    <Content>  {children}</Content>
+                    <Content className={styles.main}>  {children}</Content>
                 </Layout>
                 <Footer className={styles.footer}>
                     <PlayControl />
