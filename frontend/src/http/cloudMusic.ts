@@ -1,31 +1,67 @@
-export function getHass() {
-    const ha = parent.document.querySelector('home-assistant') as any
-    return ha.hass
-}
-const hass = getHass()
+export class HA {
 
-export function cloudMusicServer(data: object) {
-    hass.sendWS({ type: 'cloud_music_server', data })
+    SERVER = 'cloud_music_server'
+    CLIENT = 'cloud_music_client'
+    hass = this.homeassistant.hass
+    audio = new Audio()
+    entity_id = ''
+
+    constructor() {
+        this.audio.muted = false
+        ha.cloudMusicServer({ action: 'init' }).then((data) => {
+            console.log(this.audio)
+            this.entity_id = data.entity_id
+            this.audio.src = data.media_content_id
+        })
+    }
+
+    get homeassistant(): any {
+        return parent.document.querySelector('home-assistant')
+    }
+
+    async fetchWithAuth(url: string, options = {}): Promise<any> {
+        return await this.hass.fetchWithAuth(url, options).then((res: any) => res.json())
+    }
+
+    async neteaseCloudMusic(url: string) {
+        return await this.fetchWithAuth(`/ha_cloud_music-api?api=${url}`)
+    }
+
+    async cloudMusicApi(data: object) {
+        return await this.fetchWithAuth('/ha_cloud_music-api', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+    }
+
+    async cloudMusicServer(data: object): Promise<any> {
+        return await this.hass.sendWS({ type: 'cloud_music_server', data })
+    }
+
+    subscribeEvents(callback: Function) {
+        console.log('订阅事件')
+        this.hass.connection.subscribeEvents(callback, ha.CLIENT)
+    }
+
+    // 上一曲
+    previous() {
+
+    }
+    // 下一曲
+    next() {
+
+    }
+    // 播放
+    play() {
+        this.audio.play()
+    }
+    // 暂停
+    pause() {
+        this.audio.pause()
+    }
 }
 
-export async function hassFetch(url: string, options = {}): Promise<any> {
-    return await hass.fetchWithAuth(url, options).then((res: any) => res.json())
-}
-
-export async function cloudMusicApi(url: string, options = {}): Promise<any> {
-    return await hassFetch(`/ha_cloud_music-api?api=${url}`, options)
-}
-
-export async function cloudMusicFetch(url: string, options = {}): Promise<any> {
-    return await hassFetch(`/ha_cloud_music-api?api=${url}`, options)
-}
-
-export async function cloudMusicPost(data: object): Promise<any> {
-    return await hassFetch('/ha_cloud_music-api', {
-        method: 'POST',
-        body: JSON.stringify(data)
-    })
-}
+export const ha = new HA()
 
 // 推荐
 export interface IPersonalized {
@@ -50,6 +86,7 @@ export interface IArtists {
     picUrl: string,
 }
 
+// 音乐
 export interface ISong {
     id: number,
     name: string,

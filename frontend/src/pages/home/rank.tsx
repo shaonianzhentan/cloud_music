@@ -1,19 +1,26 @@
 import { IRouteComponentProps } from 'umi'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './rank.less';
 import globalStyles from '../../style/global.less'
 import { Card, List } from 'antd';
-import { cloudMusicFetch, IToplist } from '../../http/cloudMusic'
+import { ha, IToplist } from '../../http/cloudMusic'
 import { formatPicUrl } from '../../utils/format'
 const { Meta } = Card
 
-let data = new Array<IToplist>();
-
-cloudMusicFetch('/toplist').then(res => {
-  data = res.list
-})
-
 export default function Page({ history }: IRouteComponentProps) {
+
+  const [data, setData] = useState<Array<IToplist>>([])
+  useEffect(() => {
+
+    ha.neteaseCloudMusic('/toplist').then(res => {
+      setData(res.list)
+    })
+
+    return () => {
+
+    }
+  }, [])
+
   return (
     <List
       grid={{ gutter: 8, column: 5 }}

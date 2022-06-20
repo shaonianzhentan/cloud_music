@@ -4,7 +4,7 @@ import styles from './playlist.less';
 import type { ColumnsType } from 'antd/lib/table';
 import { Card, Space, Button, Table, message } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
-import { cloudMusicFetch, ISong, cloudMusicPost } from '../../http/cloudMusic'
+import { ha, ISong } from '../../http/cloudMusic'
 import { formatPicUrl, formatDuration } from '../../utils/format'
 
 const columns: ColumnsType<ISong> = [
@@ -58,7 +58,7 @@ export default function Page({ children, location, route, history, match }: IRou
   useEffect(() => {
     // console.log(id)
     setLoading(true)
-    cloudMusicFetch(`/playlist/track/all?id=${id}`).then(res => {
+    ha.neteaseCloudMusic(`/playlist/track/all?id=${id}`).then(res => {
       let arr = res.songs.map((ele: any) => {
         const { id, name, al, ar } = ele
         return {
@@ -84,10 +84,7 @@ export default function Page({ children, location, route, history, match }: IRou
   // 播放全部
   const playAll = () => {
     console.log(id)
-    cloudMusicPost({
-      act: 'playlist',
-      id
-    }).then(({ code, msg }) => {
+    ha.cloudMusicApi({ act: 'playlist', id }).then(({ code, msg }) => {
       message.info(msg);
     })
   }

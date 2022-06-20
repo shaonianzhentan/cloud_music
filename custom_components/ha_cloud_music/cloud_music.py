@@ -73,7 +73,7 @@ class CloudMusic():
         count = len(self.playlist)
         if count > 0:
            music_info = self.playlist[self._playindex]
-           if music_info.source == MusicSource.PLAYLIST:
+           if music_info.source == MusicSource.PLAYLIST.value:
                 # 获取播放链接
                 res = await http_get(self.api_url + f'/song/url?id={music_info.id}', self.cookie)
                 url = res['data'][0]['url']

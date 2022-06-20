@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Col, Row, Slider, Dropdown, Space, Menu, } from 'antd'
 import { PlayCircleOutlined, StepBackwardOutlined, StepForwardOutlined, PauseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import styles from './PlayControl.less';
-import { getHass, cloudMusicServer } from '../../http/cloudMusic'
+import { ha } from '../../http/cloudMusic'
 import _ from 'lodash'
 
 const menu = (
@@ -36,27 +36,26 @@ const menu = (
   />
 );
 
-const audio = new Audio()
-audio.autoplay = true
-console.log(audio)
-audio.ontimeupdate = _.debounce(() => {
-  console.log(audio.currentTime)
+ha.audio.ontimeupdate = _.debounce(() => {
+  console.log(ha.audio.currentTime)
   // 更新
-  cloudMusicServer({
+  ha.cloudMusicServer({
     action: 'update',
-    media_position: audio.currentTime,
-    media_duration: audio.duration,
-    volume_level: audio.volume,
-    is_volume_muted: audio.muted
+    media_position: ha.audio.currentTime,
+    media_duration: ha.audio.duration,
+    volume_level: ha.audio.volume,
+    is_volume_muted: ha.audio.muted
   })
 }, 1000)
 
-audio.onended = () => {
+ha.audio.onended = () => {
   console.log('end')
 }
-const hass = getHass()
-hass.connection.subscribeEvents(({ data }: any) => {
+
+// 订阅事件
+ha.subscribeEvents(({ data }: any) => {
   console.log(data)
+  const { audio } = ha
   // 加载音乐
   if ('play_media' in data) {
     audio.src = data.play_media
@@ -67,37 +66,42 @@ hass.connection.subscribeEvents(({ data }: any) => {
   if ('action' in data) {
     switch (data.action) {
       case 'play':
-        if (audio.src) {
-          audio.src = data.media_content_id
-        }
-        audio.play()
+        if (audio.paused) audio.play()
+        break;
+      case 'pause':
+        if (!audio.paused) audio.pause()
         break;
     }
   }
-}, 'cloud_music_client')
+})
+
+// 解决音乐播放问题
+document.onmousemove = () => {
+  ha.audio.muted = false
+  document.onmousemove = null
+  console.log('删除事件')
+}
 
 export default function PlayControl() {
 
-  const [paused, setPaused] = useState(audio.paused)
+  const [paused, setPaused] = useState(ha.audio.paused)
 
   const playClick = () => {
-    cloudMusicServer({ action: 'play' })
-    audio.play()
     setPaused(false)
+    ha.play()
   }
 
   const pauseClick = () => {
-    cloudMusicServer({ action: 'pause' })
-    audio.pause()
     setPaused(true)
+    ha.pause()
   }
 
   const previousClick = () => {
-    cloudMusicServer({ action: 'previous' })
+    ha.previous()
   }
 
   const nextClick = () => {
-    cloudMusicServer({ action: 'next' })
+    ha.next()
   }
 
   return (

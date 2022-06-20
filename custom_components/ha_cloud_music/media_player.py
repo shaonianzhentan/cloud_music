@@ -60,15 +60,19 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
     def __init__(self, hass, cloud_music):
         self.hass = hass
         self._attributes = {}
-        # default attribute
-        self._attr_state =  STATE_OFF
-        self._attr_name = manifest.name
-        self._attr_unique_id = manifest.documentation
-        self._attr_source_list = ['网页浏览器']
-        self._attr_sound_mode_list = []
+        # fixed attribute
         self._attr_media_image_remotely_accessible = True
         self._attr_device_class = MediaPlayerDeviceClass.TV.value
         self._attr_supported_features = SUPPORT_FEATURES
+
+        # default attribute
+        self._attr_source_list = ['网页浏览器']
+        self._attr_sound_mode_list = []
+        self._attr_name = manifest.name
+        self._attr_unique_id = manifest.documentation
+        self._attr_state =  STATE_OFF
+        self._attr_volume_level = 1
+        
         # source media player
         self._player = MediaPlayerWebSocket(self)
         self.cloud_music = cloud_music
@@ -121,8 +125,8 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         await self._player.async_mute_volume(mute)
 
     async def async_set_volume_level(self, volume):
-        print(f'声音调到{volume * 100}')
-        await self._player.async_set_volume_level(mute)
+        print(f'声音调到{volume}')
+        await self._player.async_set_volume_level(volume)
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         print(media_id)
@@ -160,6 +164,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
     async def async_load_music(self, is_play=False):
         music_info = await self.cloud_music.async_music_info()
         if music_info is not None:
+            self._attr_media_content_id = music_info.url
             self._attr_media_image_url = music_info.picUrl
             self._attr_media_album_name = music_info.album
             self._attr_media_title = music_info.song

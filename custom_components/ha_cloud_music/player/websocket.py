@@ -11,8 +11,6 @@ from homeassistant.const import (
     STATE_UNAVAILABLE
 )
 
-from ..manifest import manifest
-
 CLOUD_MUSIC_SERVER = "cloud_music_server"
 CLOUD_MUSIC_CLIENT = "cloud_music_client"
 SCHEMA_WEBSOCKET = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
@@ -33,41 +31,47 @@ class MediaPlayerWebSocket():
         # 监听web播放器的更新
         self.hass.components.websocket_api.async_register_command(
             CLOUD_MUSIC_SERVER,
-            self.async_update,
+            self.update,
             SCHEMA_WEBSOCKET
         )
 
-    async def async_update(self, hass, connection, msg):
-            data = msg['data']
-            print(data)
-            cloud_music = hass.data[manifest.domain]
-            # 消息类型
-            action = data.get('action')
-            if action == 'update':
-                # 进度
-                media_position = data.get('media_position')
-                if media_position is not None:
-                    self.media_player._attr_media_position = media_position
-                    self.media_player._attr_media_position_updated_at = datetime.datetime.now()
-                # 总时长
-                media_duration = data.get('media_duration')
-                if media_duration is not None:
-                    self.media_player._attr_media_duration = media_duration
-                # 音量
-                volume_level = data.get('volume_level')
-                if volume_level is not None:
-                    self.media_player._attr_volume_level = volume_level
-                # 静音
-                is_volume_muted = data.get('is_volume_muted')
-                if is_volume_muted is not None:
-                    self.media_player._attr_is_volume_muted = is_volume_muted
-            elif action == 'pause':
-                self.media_player._attr_state = STATE_PAUSED
-            elif action == 'play':
-                self.media_player._attr_state = STATE_PLAYING
-            
-            await self.media_player.async_update()
-
+    def update(self, hass, connection, msg):
+        data = msg['data']
+        print(data)
+        cloud_music = self.media_player.cloud_music
+        # 消息类型
+        action = data.get('action')
+        if action == 'update':
+            # 进度
+            media_position = data.get('media_position')
+            if media_position is not None:
+                self.media_player._attr_media_position = media_position
+                self.media_player._attr_media_position_updated_at = datetime.datetime.now()
+            # 总时长
+            media_duration = data.get('media_duration')
+            if media_duration is not None:
+                self.media_player._attr_media_duration = media_duration
+            # 音量
+            volume_level = data.get('volume_level')
+            if volume_level is not None:
+                self.media_player._attr_volume_level = volume_level
+            # 静音
+            is_volume_muted = data.get('is_volume_muted')
+            if is_volume_muted is not None:
+                self.media_player._attr_is_volume_muted = is_volume_muted
+        elif action == 'init':
+            # 初始化数据
+            connection.send_result(
+                msg["id"],
+                {
+                    "entity_id": self.media_player.entity_id,
+                    "media_image_url": self.media_player._attr_media_image_url,
+                    "media_title": self.media_player._attr_media_title,
+                    "media_artist": self.media_player._attr_media_artist,
+                    "media_album_name": self.media_player._attr_media_album_name
+                }
+            )
+ 
     async def async_media_play(self):
         # 播放
         self.fire_event({"action": "play"})
