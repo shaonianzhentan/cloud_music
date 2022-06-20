@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Col, Row, Slider, Dropdown, Space, Menu, } from 'antd'
-import { PlayCircleOutlined, StepBackwardOutlined, StepForwardOutlined, CustomerServiceOutlined, DownOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, StepBackwardOutlined, StepForwardOutlined, PauseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import styles from './PlayControl.less';
+import { getHass, cloudMusicServer } from '../../http/cloudMusic'
+import _ from 'lodash'
 
 const menu = (
   <Menu
@@ -34,13 +36,81 @@ const menu = (
   />
 );
 
+const audio = new Audio()
+audio.autoplay = true
+console.log(audio)
+audio.ontimeupdate = _.debounce(() => {
+  console.log(audio.currentTime)
+  // 更新
+  cloudMusicServer({
+    action: 'update',
+    media_position: audio.currentTime,
+    media_duration: audio.duration,
+    volume_level: audio.volume,
+    is_volume_muted: audio.muted
+  })
+}, 1000)
+
+audio.onended = () => {
+  console.log('end')
+}
+const hass = getHass()
+hass.connection.subscribeEvents(({ data }: any) => {
+  console.log(data)
+  // 加载音乐
+  if ('play_media' in data) {
+    audio.src = data.play_media
+    audio.play()
+    return
+  }
+  // 操作
+  if ('action' in data) {
+    switch (data.action) {
+      case 'play':
+        if (audio.src) {
+          audio.src = data.media_content_id
+        }
+        audio.play()
+        break;
+    }
+  }
+}, 'cloud_music_client')
+
 export default function PlayControl() {
+
+  const [paused, setPaused] = useState(audio.paused)
+
+  const playClick = () => {
+    cloudMusicServer({ action: 'play' })
+    audio.play()
+    setPaused(false)
+  }
+
+  const pauseClick = () => {
+    cloudMusicServer({ action: 'pause' })
+    audio.pause()
+    setPaused(true)
+  }
+
+  const previousClick = () => {
+    cloudMusicServer({ action: 'previous' })
+  }
+
+  const nextClick = () => {
+    cloudMusicServer({ action: 'next' })
+  }
+
   return (
     <Row justify="space-around" align="middle">
       <Col flex="180px">
-        <StepBackwardOutlined style={{ fontSize: '30px', color: '#03a9f4' }} />
-        <PlayCircleOutlined style={{ fontSize: '35px', color: '#03a9f4', margin: '0 15px' }} />
-        <StepForwardOutlined style={{ fontSize: '30px', color: '#03a9f4' }} />
+        <StepBackwardOutlined onClick={previousClick} style={{ fontSize: '30px', color: '#03a9f4' }} />
+        {
+          paused ?
+            <PlayCircleOutlined onClick={playClick} style={{ fontSize: '35px', color: '#03a9f4', margin: '0 15px' }} />
+            :
+            <PauseCircleOutlined onClick={pauseClick} style={{ fontSize: '35px', color: '#03a9f4', margin: '0 15px' }} />
+        }
+        <StepForwardOutlined onClick={nextClick} style={{ fontSize: '30px', color: '#03a9f4' }} />
       </Col>
       <Col flex="auto">
         <Slider defaultValue={37} />

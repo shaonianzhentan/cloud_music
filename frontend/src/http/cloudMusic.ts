@@ -1,12 +1,20 @@
-export async function hassFetch(url: string, options = {}): Promise<any> {
+export function getHass() {
     const ha = parent.document.querySelector('home-assistant') as any
-    if (ha) return await ha.hass.fetchWithAuth(url, options).then((res: any) => res.json())
+    return ha.hass
+}
+const hass = getHass()
+
+export function cloudMusicServer(data: object) {
+    hass.sendWS({ type: 'cloud_music_server', data })
+}
+
+export async function hassFetch(url: string, options = {}): Promise<any> {
+    return await hass.fetchWithAuth(url, options).then((res: any) => res.json())
 }
 
 export async function cloudMusicApi(url: string, options = {}): Promise<any> {
     return await hassFetch(`/ha_cloud_music-api?api=${url}`, options)
 }
-
 
 export async function cloudMusicFetch(url: string, options = {}): Promise<any> {
     return await hassFetch(`/ha_cloud_music-api?api=${url}`, options)

@@ -9,15 +9,15 @@ import { formatPicUrl, formatDuration } from '../../utils/format'
 
 const columns: ColumnsType<ISong> = [
   {
-    title: '序号',
     key: 'index',
+    title: '序号',
     align: 'center',
     width: 80,
     render: (_, record, index) => (<span>{index}</span>),
   },
   {
-    title: '操作',
     key: 'action',
+    title: '操作',
     align: 'center',
     width: 100,
     render: (_, record) => (
@@ -95,6 +95,7 @@ export default function Page({ children, location, route, history, match }: IRou
   return (
     <Table bordered={true}
       loading={loading}
+      rowKey={record => record.id}
       title={() => (<Button type="primary" icon={<PlayCircleOutlined />} onClick={playAll}>播放全部</Button>)}
       columns={columns}
       size={'small'}
