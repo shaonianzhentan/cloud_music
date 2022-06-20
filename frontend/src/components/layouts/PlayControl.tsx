@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Col, Row, Slider, Dropdown, Space, Menu, } from 'antd'
+import { Col, Row, Slider, Dropdown, Space, Menu, Avatar, Comment, Tooltip, message } from 'antd'
 import { PlayCircleOutlined, StepBackwardOutlined, StepForwardOutlined, PauseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import styles from './PlayControl.less';
 import { ha } from '../../http/cloudMusic'
-import _ from 'lodash'
+import { formatTime } from '../../utils/format'
 
 const menu = (
   <Menu
@@ -36,77 +36,58 @@ const menu = (
   />
 );
 
-ha.audio.ontimeupdate = _.debounce(() => {
-  console.log(ha.audio.currentTime)
-  // 更新
-  ha.cloudMusicServer({
-    action: 'update',
-    media_position: ha.audio.currentTime,
-    media_duration: ha.audio.duration,
-    volume_level: ha.audio.volume,
-    is_volume_muted: ha.audio.muted
-  })
-}, 1000)
-
-ha.audio.onended = () => {
-  console.log('end')
-}
-
-// 订阅事件
-ha.subscribeEvents(({ data }: any) => {
-  console.log(data)
-  const { audio } = ha
-  // 加载音乐
-  if ('play_media' in data) {
-    audio.src = data.play_media
-    audio.play()
-    return
-  }
-  // 操作
-  if ('action' in data) {
-    switch (data.action) {
-      case 'play':
-        if (audio.paused) audio.play()
-        break;
-      case 'pause':
-        if (!audio.paused) audio.pause()
-        break;
-    }
-  }
-})
-
-// 解决音乐播放问题
-document.onmousemove = () => {
-  ha.audio.muted = false
-  document.onmousemove = null
-  console.log('删除事件')
-}
-
 export default function PlayControl() {
 
   const [paused, setPaused] = useState(ha.audio.paused)
+  const [position, setPosition] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [song, setSong] = useState('云音乐')
+  const [singer, setSinger] = useState('小可爱')
+  const [pic, setPic] = useState('https://www.home-assistant.io/images/favicon-192x192.png')
 
   const playClick = () => {
     setPaused(false)
     ha.play()
+    message.success('播放音乐')
   }
 
   const pauseClick = () => {
     setPaused(true)
     ha.pause()
+    message.success('暂停音乐')
   }
 
   const previousClick = () => {
     ha.previous()
+    message.success('上一曲')
   }
 
   const nextClick = () => {
     ha.next()
+    message.success('下一曲')
   }
+
+  useEffect(() => {
+    const { audio } = ha
+    const ontimeupdate = () => {
+      setPosition(audio.currentTime / audio.duration * 100)
+      setVolume(audio.volume)
+      setSinger(ha.attrs.artist)
+      setPic(ha.attrs.image)
+      setSong(ha.attrs.title)
+    }
+    audio.addEventListener('timeupdate', ontimeupdate)
+    return () => {
+      audio.removeEventListener('timeupdate', ontimeupdate)
+    }
+  }, [])
+
+  const formatPosition: any = (value: number) => `${formatTime(ha.audio.currentTime)}/${formatTime(ha.audio.duration)}`;
+  const formatVolume: any = (value: number) => `${value * 100}%`;
 
   return (
     <Row justify="space-around" align="middle">
-      <Col flex="180px">
+      <Col flex="170px">
         <StepBackwardOutlined onClick={previousClick} style={{ fontSize: '30px', color: '#03a9f4' }} />
         {
           paused ?
@@ -117,10 +98,20 @@ export default function PlayControl() {
         <StepForwardOutlined onClick={nextClick} style={{ fontSize: '30px', color: '#03a9f4' }} />
       </Col>
       <Col flex="auto">
-        <Slider defaultValue={37} />
+        <Comment
+          className={styles.comment}
+          author={<a>{song}</a>}
+          avatar={<Avatar src={pic} alt={song} />}
+          content={
+            <Slider defaultValue={100} value={position} step={0.1} tipFormatter={formatPosition} />
+          }
+          datetime={
+            <span>{singer}</span>
+          }
+        />
       </Col>
       <Col flex="150px">
-        <Slider defaultValue={30} />
+        <Slider defaultValue={1} value={volume} min={0} max={1} step={0.1} tipFormatter={formatVolume} />
       </Col>
       <Col style={{ textAlign: 'right' }}>
         <Dropdown overlay={menu} placement="topRight">

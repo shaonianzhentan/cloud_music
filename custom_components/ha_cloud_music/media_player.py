@@ -1,4 +1,3 @@
-"""Add support for the Xiaomi TVs."""
 import logging, time, datetime
 
 from homeassistant.core import HomeAssistant
@@ -18,6 +17,10 @@ from homeassistant.components.media_player.const import (
     SUPPORT_PLAY_MEDIA,
     SUPPORT_PLAY,
     SUPPORT_PAUSE,
+    SUPPORT_SEEK,
+    SUPPORT_CLEAR_PLAYLIST,
+    SUPPORT_SHUFFLE_SET,
+    SUPPORT_REPEAT_SET,
     SUPPORT_NEXT_TRACK,
     SUPPORT_PREVIOUS_TRACK
 )

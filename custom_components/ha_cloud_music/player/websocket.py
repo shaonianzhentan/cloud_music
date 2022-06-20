@@ -65,6 +65,7 @@ class MediaPlayerWebSocket():
                 msg["id"],
                 {
                     "entity_id": self.media_player.entity_id,
+                    "media_content_id": self.media_player._attr_media_content_id,
                     "media_image_url": self.media_player._attr_media_image_url,
                     "media_title": self.media_player._attr_media_title,
                     "media_artist": self.media_player._attr_media_artist,
@@ -94,13 +95,13 @@ class MediaPlayerWebSocket():
 
     async def async_volume_up(self):
         # 增加音量
-        current_volume = self.volume_level
+        current_volume = self.media_player._attr_volume_level
         if current_volume < 1:
             self.set_volume_level(current_volume + 0.1)
 
     async def async_volume_down(self):
         # 减少音量
-        current_volume = self.volume_level
+        current_volume = self.media_player._attr_volume_level
         if current_volume > 0:
             self.set_volume_level(current_volume - 0.1)
 
@@ -108,6 +109,7 @@ class MediaPlayerWebSocket():
         print(media_type, media_id)
         self.fire_event({
             "play_media": media_id,
+            "media_content_id": self.media_player._attr_media_content_id,
             "media_image_url": self.media_player._attr_media_image_url,
             "media_title": self.media_player._attr_media_title,
             "media_artist": self.media_player._attr_media_artist,

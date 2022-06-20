@@ -2,7 +2,7 @@ import { IRouteComponentProps } from 'umi'
 import React, { useEffect, useState } from 'react';
 import styles from './playlist.less';
 import type { ColumnsType } from 'antd/lib/table';
-import { Card, Space, Button, Table, message } from 'antd';
+import { Card, Space, Button, Table, message, BackTop  } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import { ha, ISong } from '../../http/cloudMusic'
 import { formatPicUrl, formatDuration } from '../../utils/format'
@@ -90,6 +90,7 @@ export default function Page({ children, location, route, history, match }: IRou
   }
 
   return (
+    <>
     <Table bordered={true}
       loading={loading}
       rowKey={record => record.id}
@@ -97,5 +98,6 @@ export default function Page({ children, location, route, history, match }: IRou
       columns={columns}
       size={'small'}
       pagination={{ hideOnSinglePage: true, defaultPageSize: 10000 }} dataSource={data} />
+    </>
   );
 }

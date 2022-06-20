@@ -1,5 +1,6 @@
+import { createRef } from 'react'
 import { IRouteComponentProps } from 'umi'
-import { PageHeader, Layout, Menu } from 'antd'
+import { PageHeader, Layout, Menu, BackTop } from 'antd'
 import type { MenuProps } from 'antd';
 import styles from './index.less';
 import { UserOutlined, BarChartOutlined, OrderedListOutlined, BarsOutlined, HomeOutlined } from '@ant-design/icons';
@@ -52,6 +53,8 @@ const items: MenuProps['items'] = [
 
 export default function LayoutIndex({ children, location, route, history, match }: IRouteComponentProps) {
 
+    const mainRef = createRef<HTMLElement>()
+
     const selectPath = ({ key }: any) => {
         history.push(key)
     };
@@ -77,7 +80,10 @@ export default function LayoutIndex({ children, location, route, history, match 
                             onSelect={selectPath}
                         />
                     </Sider>
-                    <Content className={styles.main}>  {children}</Content>
+                    <Content ref={mainRef} className={styles.main}>  {children}
+
+                        <BackTop target={() => mainRef.current as any} />
+                    </Content>
                 </Layout>
                 <Footer className={styles.footer}>
                     <PlayControl />
