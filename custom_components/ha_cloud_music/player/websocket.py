@@ -87,13 +87,13 @@ class MediaPlayerWebSocket():
         # 增加音量
         current_volume = self.media_player._attr_volume_level
         if current_volume < 1:
-            self.set_volume_level(current_volume + 0.1)
+            await self.async_set_volume_level(current_volume + 0.1)
 
     async def async_volume_down(self):
         # 减少音量
         current_volume = self.media_player._attr_volume_level
         if current_volume > 0:
-            self.set_volume_level(current_volume - 0.1)
+            await self.async_set_volume_level(current_volume - 0.1)
 
     async def async_play_media(self, media_type, media_id):
         print(media_type, media_id)

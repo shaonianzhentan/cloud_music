@@ -114,6 +114,16 @@ export class HA {
         this.hass.connection.subscribeEvents(callback, this.CLIENT)
     }
 
+    fire(type: string, data = {}) {
+        const event: any = new parent.window.Event(type, {
+            bubbles: true,
+            cancelable: false,
+            composed: true
+        });
+        event.detail = data;
+        this.homeassistant.dispatchEvent(event);
+    }
+
     // 上一曲
     previous() {
         const { entity_id } = this

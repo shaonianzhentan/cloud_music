@@ -35,6 +35,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE
 )
 
+from .browse_media import async_browse_media
 from .player.websocket import MediaPlayerWebSocket
 from .cloud_music import CloudMusic
 
@@ -103,7 +104,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         return self._attributes
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
-        return []
+        return await async_browse_media(self, media_content_type, media_content_id)
 
     async def async_select_source(self, source):
         if self._attr_source_list.count(source) > 0:
@@ -135,8 +136,12 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         await self._player.async_set_volume_level(volume)
 
     async def async_play_media(self, media_type, media_id, **kwargs):
-        print(media_id)
-        await self._player.async_play_media(media_type, media_id)
+        print(media_type, media_id)
+        if media_type == 'playlist':
+            self.cloud_music.playindex = int(media_id)
+            await self.async_load_music(True)
+        else:
+            await self._player.async_play_media(media_type, media_id)
         self._attr_state = STATE_PLAYING
 
     async def async_media_play(self):
@@ -146,6 +151,12 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
     async def async_media_pause(self):
         self._attr_state = STATE_PAUSED
         await self._player.async_media_pause()
+
+    async def async_set_repeat(self, repeat):
+        self._attr_repeat = repeat
+
+    async def async_set_shuffle(self, shuffle):
+        self._attr_shuffle = shuffle
 
     async def async_media_next_track(self):
         self._attr_state = STATE_PAUSED

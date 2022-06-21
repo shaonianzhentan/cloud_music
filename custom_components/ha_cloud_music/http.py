@@ -37,8 +37,9 @@ class HttpView(HomeAssistantView):
         body = await request.json()
         id = body.get('id')
         act = body.get('act')
+        playindex = body.get('index', 0)
         if act == 'playlist':
-            await cloud_music.async_load_playlist(id)
+            await cloud_music.async_load_playlist(id, playindex)
             await media_player.async_load_music(True)
             return self.json({ 'code': 0, 'msg': '正在播放歌单'})
 

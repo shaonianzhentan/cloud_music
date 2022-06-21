@@ -67,6 +67,10 @@ export default function PlayControl() {
     message.success('下一曲')
   }
 
+  const dialogClick = () => {
+    ha.fire('hass-more-info', { entityId: ha.entity_id })
+  }
+
   useEffect(() => {
     const { audio } = ha
     const ontimeupdate = () => {
@@ -101,7 +105,7 @@ export default function PlayControl() {
         <Comment
           className={styles.comment}
           author={<a>{song}</a>}
-          avatar={<Avatar src={pic} alt={song} />}
+          avatar={<a onClick={dialogClick}><Avatar src={pic} alt={song} /></a>}
           content={
             <Slider defaultValue={100} value={position} step={0.1} tipFormatter={formatPosition} />
           }
