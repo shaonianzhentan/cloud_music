@@ -46,7 +46,7 @@ _LOGGER = logging.getLogger(__name__)
 SUPPORT_FEATURES = SUPPORT_VOLUME_STEP | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE | SUPPORT_SELECT_SOUND_MODE | \
     SUPPORT_PLAY_MEDIA | SUPPORT_PLAY | SUPPORT_PAUSE | SUPPORT_PREVIOUS_TRACK | SUPPORT_NEXT_TRACK | \
-    SUPPORT_BROWSE_MEDIA
+    SUPPORT_BROWSE_MEDIA | SUPPORT_SEEK | SUPPORT_CLEAR_PLAYLIST | SUPPORT_SHUFFLE_SET | SUPPORT_REPEAT_SET
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -54,14 +54,17 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     data = entry.data
-    media_player = CloudMusicMediaPlayer(hass, CloudMusic(data.get(CONF_URL)))
+    api_url = data.get(CONF_URL)
+    cloud_music = CloudMusic(api_url)
+    media_player = CloudMusicMediaPlayer(hass, cloud_music, { **data, **entry.options })
     hass.data[DOMAIN] = media_player
     async_add_entities([ media_player ], True)
 
 class CloudMusicMediaPlayer(MediaPlayerEntity):
 
-    def __init__(self, hass, cloud_music):
+    def __init__(self, hass, cloud_music, config):
         self.hass = hass
+        self.config = config
         self._attributes = {}
         # fixed attribute
         self._attr_media_image_remotely_accessible = True
@@ -69,7 +72,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         self._attr_supported_features = SUPPORT_FEATURES
 
         # default attribute
-        self._attr_source_list = ['网页浏览器']
+        self._attr_source_list = ['网页浏览器', 'MPD', 'Windows应用']
         self._attr_sound_mode_list = []
         self._attr_name = manifest.name
         self._attr_unique_id = manifest.documentation
@@ -158,6 +161,10 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     async def async_media_seek(self, position):
         await self._player.async_media_seek(position)
+
+    async def async_media_stop(self):
+        # 停止播放
+        await self._player.async_media_stop()
 
     # 更新属性
     async def async_update(self):

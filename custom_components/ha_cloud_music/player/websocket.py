@@ -1,15 +1,6 @@
-import time, datetime
+import datetime
 from homeassistant.components import websocket_api
 import voluptuous as vol
-from homeassistant.const import (
-    CONF_TOKEN, 
-    CONF_NAME,
-    STATE_OFF, 
-    STATE_ON, 
-    STATE_PLAYING, 
-    STATE_PAUSED,
-    STATE_UNAVAILABLE
-)
 
 CLOUD_MUSIC_SERVER = "cloud_music_server"
 CLOUD_MUSIC_CLIENT = "cloud_music_client"
@@ -38,7 +29,6 @@ class MediaPlayerWebSocket():
     def update(self, hass, connection, msg):
         data = msg['data']
         print(data)
-        cloud_music = self.media_player.cloud_music
         # 消息类型
         action = data.get('action')
         if action == 'update':
@@ -115,6 +105,9 @@ class MediaPlayerWebSocket():
             "media_artist": self.media_player._attr_media_artist,
             "media_album_name": self.media_player._attr_media_album_name
         })
+
+    async def async_media_stop(self):
+        self.fire_event({"action": "stop"})
 
     def fire_event(self, data):
         self.hass.bus.fire(CLOUD_MUSIC_CLIENT, data)
