@@ -13,7 +13,7 @@ class CloudMusic():
         self._playlist = []
         self.cookie = {}
         # 读取本地存储文件
-        self.playlist_filepath = os.path.abspath(f'{STORAGE_DIR}/cloud_music.playlist')
+        self.playlist_filepath = self.get_storage_dir('cloud_music.playlist')
         if os.path.exists(self.playlist_filepath):
             res = load_json(self.playlist_filepath)
             self.playlist_id = res.get('id', '')
@@ -28,7 +28,14 @@ class CloudMusic():
                     item['picUrl'], 
                     item['source'])
             self._playlist = list(map(format_playlist, res['list']))
+        # 读取cookie
+        self.cookie_filepath = self.get_storage_dir('cloud_music.cookie')
+        if os.path.exists(self.cookie_filepath):
+            self.cookie = load_json(self.cookie_filepath)
     
+    def get_storage_dir(self, file_name):
+        return os.path.abspath(f'{STORAGE_DIR}/{file_name}')
+
     @property
     def playlist(self) -> list[MusicInfo]:
         return self._playlist

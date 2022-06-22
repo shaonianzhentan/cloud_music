@@ -1,10 +1,11 @@
 import { createRef } from 'react'
 import { IRouteComponentProps } from 'umi'
-import { PageHeader, Layout, Menu, BackTop } from 'antd'
+import { PageHeader, Layout, Menu, BackTop, Button } from 'antd'
 import type { MenuProps } from 'antd';
 import styles from './index.less';
-import { UserOutlined, BarChartOutlined, OrderedListOutlined, BarsOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, BarChartOutlined, OrderedListOutlined, BarsOutlined, HomeOutlined, LoginOutlined } from '@ant-design/icons';
 import PlayControl from '../components/layouts/PlayControl'
+import LoginButton from '../components/layouts/LoginButton'
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -68,6 +69,9 @@ export default function LayoutIndex({ children, location, route, history, match 
                         backIcon={<HomeOutlined style={{ fontSize: '20px', color: 'white' }} />}
                         onBack={() => null}
                         title="云音乐"
+                        extra={[
+                            <LoginButton key="loginbutton" />,
+                        ]}
                     />
                 </Header>
                 <Layout>

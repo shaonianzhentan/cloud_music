@@ -13,5 +13,16 @@
                 }
             }
         }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "服务配置",
+                "description": "配置",
+                "data": {
+                }
+            }
+        },
+        "error": {}
     }
 }

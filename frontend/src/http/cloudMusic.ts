@@ -95,7 +95,7 @@ export class HA {
     }
 
     async neteaseCloudMusic(url: string) {
-        return await this.fetchWithAuth(`/ha_cloud_music-api?api=${url}`)
+        return await this.fetchWithAuth(`/ha_cloud_music-api?api=${encodeURIComponent(url)}`)
     }
 
     async cloudMusicApi(data: object) {

@@ -1,7 +1,8 @@
 import os
 from homeassistant.components.http import HomeAssistantView
 from .manifest import manifest
-from .http_api import http_get
+from .http_api import http_get, http_cookie
+from homeassistant.util.json import load_json, save_json
 
 DOMAIN = manifest.domain
 
@@ -16,7 +17,19 @@ class HttpView(HomeAssistantView):
         cloud_music = hass.data[DOMAIN].cloud_music
         query = request.query
         api = query.get('api')
-        data = await http_get(cloud_music.api_url + api, cloud_music.cookie)
+        # 登录
+        if api.count('/login?') > 0:
+            data = await http_cookie(cloud_music.api_url + api)
+            res_data = data.get('data', {})
+            # 登录成功
+            if res_data.get('code') == 200:
+                print(res_data)
+                # 写入cookie
+                cookie = data.get('cookie')
+                save_json(cloud_music.cookie_filepath, cookie)
+                cloud_music.cookie = cookie
+        else:
+            data = await http_get(cloud_music.api_url + api, cloud_music.cookie)
         return self.json(data)
 
     async def delete(self, request):
