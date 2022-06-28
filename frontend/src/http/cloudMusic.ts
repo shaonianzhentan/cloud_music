@@ -70,7 +70,6 @@ export class HA {
 
     onupdate() {
         const { audio } = this
-        console.log(audio.currentTime)
         // 更新
         this.cloudMusicServer({
             action: 'update',

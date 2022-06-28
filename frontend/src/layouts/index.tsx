@@ -40,15 +40,9 @@ const items: MenuProps['items'] = [
         getItem('本地音乐', '/my/local'),
         getItem('音乐云盘', '/my/cloud'),
         getItem('订阅电台', '/my/radio'),
-        getItem('我的收藏', '/my/favorite')
-    ]),
-
-    getItem('创建的歌单', 'sub4', <OrderedListOutlined />, [
-        getItem('Option 9', '9'),
-    ]),
-
-    getItem('收藏的歌单', 'sub5', <BarsOutlined />, [
-        getItem('Option 10', '10'),
+        getItem('我的收藏', '/my/favorite'),
+        getItem('我的歌单', '/my/playlist'),
+        getItem('收藏歌单', '/my/favoritelist')
     ]),
 ];
 

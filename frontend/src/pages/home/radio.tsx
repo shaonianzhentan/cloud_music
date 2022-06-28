@@ -16,7 +16,7 @@ export default function Page({ history }: IRouteComponentProps) {
     ha.neteaseCloudMusic('/personalized/djprogram').then(res => {
       setData(res.result)
     })
-
+    
     return () => {
 
     }

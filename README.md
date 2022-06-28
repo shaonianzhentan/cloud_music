@@ -16,6 +16,12 @@
 
 [![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start?domain=ha_cloud_music)
 
+## Todo List
+
+- [ ] 添加我的云盘
+- [ ] 添加我的收藏
+- [ ] 添加我的歌单
+- [ ] 转存到我的云盘
 
 ## 如果这个项目对你有帮助，请我喝杯<del style="font-size: 14px;">咖啡</del>奶茶吧😘
 |支付宝|微信|

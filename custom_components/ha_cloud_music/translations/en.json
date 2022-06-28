@@ -7,11 +7,16 @@
         "step": {
             "user": {
                 "title": "接口配置",
-                "description": "请自行部署，或联系开发者获取",
+                "description": "登录后会将cookie保存在HomeAssistant存储目录之中\n为防止你的账号密码泄露，建议自行部署API接口服务",
                 "data": {
-                    "url": "网易云音乐API"
+                    "url": "网易云音乐API",
+                    "username": "邮箱/手机号",
+                    "password": "网易云音乐密码"
                 }
             }
+        },
+        "error": {
+            "login_failed": "登录失败"
         }
     },
     "options": {
@@ -19,8 +24,7 @@
             "user": {
                 "title": "服务配置",
                 "description": "配置",
-                "data": {
-                }
+                "data": {}
             }
         },
         "error": {}
