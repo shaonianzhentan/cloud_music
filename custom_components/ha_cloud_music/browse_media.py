@@ -1,5 +1,6 @@
 """Support for media browsing."""
 import logging, os
+from urllib.parse import urlparse, parse_qs, parse_qsl, quote
 from homeassistant.helpers.network import get_url
 from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
@@ -53,50 +54,39 @@ CHILD_TYPE_MEDIA_CLASS = {
 
 _LOGGER = logging.getLogger(__name__)
 
+from .browse.radio import radio_favorites, radio_playlist
+from .browse.playlist import playlist_all, playlist_toplist, user_playlist
+from .browse.artists import artists_favorites, artists_playlist
+
 async def async_browse_media(media_player, media_content_type, media_content_id):
+    cloud_music = media_player.cloud_music
     # 主界面
     if media_content_type in [None, 'home']:
         children = [
             {
                 'title': '播放列表',
                 'type': 'playlist',
-                'can_play': True,
-                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg?param=500y500'
+                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg'
             },{
                 'title': '我的云盘',
                 'type': 'cloud',
-                'can_play': True,
-                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg?param=500y500'
+                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg'
             },{
-                'title': '创建的歌单',
+                'title': '我的歌单',
                 'type': 'created',
-                'can_play': False,
-                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg?param=500y500'
-            },{
-                'title': '收藏的歌单',
-                'type': 'favorites',
-                'can_play': False,
-                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg?param=500y500'
+                'thumbnail': 'https://p2.music.126.net/ElBQCbIDRire6yg0ptVfJQ==/109951164152032144.jpg'
             },{
                 'title': '我的电台',
                 'type': 'radio',
-                'can_play': False,
-                'thumbnail': 'http://p1.music.126.net/6nuYK0CVBFE3aslWtsmCkQ==/109951165472872790.jpg?param=500y500'
+                'thumbnail': 'http://p1.music.126.net/6nuYK0CVBFE3aslWtsmCkQ==/109951165472872790.jpg'
             },{
                 'title': '我的歌手',
-                'type': 'singer',
-                'can_play': False,
-                'thumbnail': 'http://p1.music.126.net/9M-U5gX1gccbuBXZ6JnTUg==/109951165264087991.jpg?param=500y500'
+                'type': 'artist',
+                'thumbnail': 'http://p1.music.126.net/9M-U5gX1gccbuBXZ6JnTUg==/109951165264087991.jpg'
             },{
-                'title': '云音乐特色榜',
-                'type': 'feature',
-                'can_play': False,
-                'thumbnail': 'http://p2.music.126.net/pcYHpMkdC69VVvWiynNklA==/109951166952713766.jpg?param=500y500'
-            },{
-                'title': '全球媒体榜',
-                'type': 'global',
-                'can_play': False,
-                'thumbnail': 'http://p1.music.126.net/G91csin09maPrNgqcUKnBQ==/109951165698553069.jpg?param=500y500'
+                'title': '榜单',
+                'type': 'toplist',
+                'thumbnail': 'http://p2.music.126.net/pcYHpMkdC69VVvWiynNklA==/109951166952713766.jpg'
             }
         ]
         library_info = BrowseMedia(
@@ -109,37 +99,35 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
             children=[],
         )
         for item in children:
-            can_play = item['can_play']
-            can_expand = can_play == False
             library_info.children.append(
                 BrowseMedia(
                     title=item['title'],
-                    media_class=MEDIA_CLASS_MUSIC,
+                    media_class=MEDIA_CLASS_DIRECTORY,
                     media_content_type=item['type'],
                     media_content_id=item['title'],
-                    can_play=can_play,
-                    can_expand=can_expand,
-                    thumbnail=item['thumbnail']
+                    can_play=False,
+                    can_expand=True,
+                    thumbnail=cloud_music.netease_image_url(item['thumbnail'])
                 )
             )
     elif media_content_type == 'playlist':
         library_info = BrowseMedia(
             media_class=MEDIA_CLASS_DIRECTORY,
             media_content_id=media_content_id,
-            media_content_type=media_content_type,
+            media_content_type=MEDIA_TYPE_PLAYLIST,
             title=media_content_id,
             can_play=False,
             can_expand=False,
             children=[],
         )
-        playlist = media_player.cloud_music.playlist
+        playlist = cloud_music.playlist
         for index, item in enumerate(playlist):
             library_info.children.append(
                 BrowseMedia(
                     title=f'{item.song} - {item.singer}',
                     media_class=MEDIA_CLASS_MUSIC,
-                    media_content_type=media_content_type,
-                    media_content_id=index,
+                    media_content_type=MEDIA_TYPE_PLAYLIST,
+                    media_content_id=f"type=index&index={index}",
                     can_play=True,
                     can_expand=False,
                     thumbnail=item.picUrl
@@ -148,71 +136,42 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
     elif media_content_type == 'cloud':
         library_info = BrowseMedia(
             media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
+            media_content_id=f"type=cloud&index=0",
+            media_content_type=MEDIA_TYPE_PLAYLIST,
             title=media_content_id,
-            can_play=False,
+            can_play=True,
             can_expand=False,
             children=[],
         )
+        playlist = await cloud_music.async_get_cloud()
+        cloud_data = []
+        for index, music_info in enumerate(playlist):
+            library_info.children.append(
+                BrowseMedia(
+                    title=music_info.song,
+                    media_class=MEDIA_CLASS_MUSIC,
+                    media_content_type=MEDIA_TYPE_PLAYLIST,
+                    media_content_id=f"type=cloud&index={index}",
+                    can_play=True,
+                    can_expand=False,
+                    thumbnail=music_info.picUrl
+                )
+            )
+            # 记录云数据
+            cloud_data.append(music_info.to_dict())
+        cloud_music.save_file('cloud', cloud_data)
     elif media_content_type == 'created':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
-    elif media_content_type == 'favorites':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
+        return await user_playlist(cloud_music, media_content_id, 'all')
     elif media_content_type == 'radio':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
-    elif media_content_type == 'singer':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
-    elif media_content_type == 'feature':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
-    elif media_content_type == 'global':
-        library_info = BrowseMedia(
-            media_class=MEDIA_CLASS_DIRECTORY,
-            media_content_id=media_content_id,
-            media_content_type=media_content_type,
-            title=media_content_id,
-            can_play=False,
-            can_expand=False,
-            children=[],
-        )
+        return await radio_favorites(cloud_music, media_content_id, 'radio-playlist')
+    elif media_content_type == 'radio-playlist':
+        return await radio_playlist(cloud_music, media_content_id)
+    elif media_content_type == 'artist':
+        return await artists_favorites(cloud_music, media_content_id, 'artist-playlist')
+    elif media_content_type == 'artist-playlist':
+        return await artists_playlist(cloud_music, media_content_id)
+    elif media_content_type == 'toplist':
+        return await playlist_toplist(cloud_music, media_content_id, 'all')
+    elif media_content_type == 'all':
+        return await playlist_all(cloud_music, media_content_id)
     return library_info

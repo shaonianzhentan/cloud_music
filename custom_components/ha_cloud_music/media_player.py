@@ -1,4 +1,5 @@
 import logging, time, datetime
+from urllib.parse import urlparse, parse_qs, parse_qsl
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -22,7 +23,16 @@ from homeassistant.components.media_player.const import (
     SUPPORT_SHUFFLE_SET,
     SUPPORT_REPEAT_SET,
     SUPPORT_NEXT_TRACK,
-    SUPPORT_PREVIOUS_TRACK
+    SUPPORT_PREVIOUS_TRACK,
+    MEDIA_TYPE_ALBUM,
+    MEDIA_TYPE_ARTIST,
+    MEDIA_TYPE_CHANNEL,
+    MEDIA_TYPE_EPISODE,
+    MEDIA_TYPE_MOVIE,
+    MEDIA_TYPE_PLAYLIST,
+    MEDIA_TYPE_SEASON,
+    MEDIA_TYPE_TRACK,
+    MEDIA_TYPE_TVSHOW,
 )
 from homeassistant.const import (
     CONF_TOKEN, 
@@ -34,7 +44,7 @@ from homeassistant.const import (
     STATE_PAUSED,
     STATE_UNAVAILABLE
 )
-
+from .utils import parse_query
 from .browse_media import async_browse_media
 from .player.websocket import MediaPlayerWebSocket
 from .cloud_music import CloudMusic
@@ -137,8 +147,21 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         print(media_type, media_id)
-        if media_type == 'playlist':
-            self.cloud_music.playindex = int(media_id)
+        if media_type == MEDIA_TYPE_PLAYLIST:            
+            query = parse_query(media_id)
+            act = query['type']
+            playindex = int(query.get('index', 0))
+            id = query.get('id')
+            if act == 'index':
+                self.cloud_music.playindex = playindex
+            elif act == 'playlist':
+                await self.cloud_music.async_load_playlist(id, playindex)
+            elif act == 'artist':
+                await self.cloud_music.async_load_artists(id, playindex)
+            elif act == 'radio':
+                await self.cloud_music.async_load_djradio(id, playindex)
+            elif act == 'cloud':
+                await self.cloud_music.async_load_cloud(playindex)
             await self.async_load_music(True)
         else:
             await self._player.async_play_media(media_type, media_id)
@@ -160,8 +183,11 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     async def async_media_next_track(self):
         self._attr_state = STATE_PAUSED
-        print('下一个')
-        self.cloud_music.next()
+        if self._attr_repeat == 'all':
+            self.cloud_music.next(self._attr_shuffle)
+        elif self._attr_repeat == 'off' and self.cloud_music.playindex == len(self.cloud_music.playlist) - 1:
+            print('关闭循环播放')
+            return
         await self.async_load_music(True)
 
     async def async_media_previous_track(self):

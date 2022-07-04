@@ -3,9 +3,11 @@ import enum
 class MusicSource(enum.Enum):
 
     URL = 1
-    PLAYLIST = 2
-    DJRADIO = 3
-    XIMALAYA = 4
+    XIMALAYA = 2
+    PLAYLIST = 3
+    DJRADIO = 4
+    ARTISTS = 5
+    CLOUD = 6
 
 
 class MusicInfo:
@@ -33,6 +35,10 @@ class MusicInfo:
         return self._singer
 
     @property
+    def duration(self):
+        return self._duration
+
+    @property
     def album(self):
         return self._album
 
@@ -47,3 +53,15 @@ class MusicInfo:
     @property
     def source(self) -> MusicSource:
         return self._source
+
+    def to_dict(self):
+        return {
+            'id': self.id, 
+            'song': self.song, 
+            'singer': self.singer, 
+            'album': self.album, 
+            'duration': self.duration, 
+            'url': self.url, 
+            'picUrl': self.picUrl,
+            'source': self.source
+        }
