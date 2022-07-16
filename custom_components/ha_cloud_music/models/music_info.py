@@ -51,6 +51,10 @@ class MusicInfo:
         return self._picUrl
 
     @property
+    def thumbnail(self):
+        return self._picUrl + '?param=200y200'
+
+    @property
     def source(self) -> MusicSource:
         return self._source
 
