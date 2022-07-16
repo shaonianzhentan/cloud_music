@@ -100,7 +100,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             hass.async_create_task(self.async_load_music())
             self._attr_state =  STATE_PAUSED
         
-        hass.async_create_task(self.async_select_source('MPD'))
+        self.read_config()
         
     @property
     def device_info(self):
@@ -133,9 +133,9 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             elif source == '网页浏览器':
                 self._player = MediaPlayerWebSocket(self)
 
-    async def async_select_source_mode(self, mode):
+    async def async_select_sound_mode(self, mode):
         if self._attr_sound_mode_list.count(mode) > 0:
-            self._attr_source_mode = mode
+            self._attr_sound_mode = mode
 
     async def async_turn_off(self):
         self._attr_state = STATE_OFF
@@ -235,4 +235,31 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             # 播放音乐
             if is_play == True:
                 await self.async_play_media(music_info.source, music_info.url)
+            # 保存配置
+            self.save_config()
         return music_info
+
+    # 保存配置
+    def save_config(self):
+        self.cloud_music.save_file('config', {
+            'volume_level': self._attr_volume_level,
+            'repeat': self._attr_repeat,
+            'source': self._attr_source,
+            'sound_mode': self._attr_sound_mode,
+            'playindex': self.cloud_music.playindex
+        })
+
+    # 读取配置
+    def read_config(self):
+        source = '网页播放器'
+
+        data = self.cloud_music.read_file('config')
+        if data is not None:
+            source = data.get('source')
+            self._attr_volume_level = data.get('volume_level')
+            self._attr_repeat = data.get('repeat')
+            self._attr_sound_mode = data.get('sound_mode')
+
+            self.cloud_music.playindex = data.get('playindex')
+
+        self.hass.async_create_task(self.async_select_source(source))

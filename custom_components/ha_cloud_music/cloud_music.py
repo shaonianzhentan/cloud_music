@@ -48,6 +48,11 @@ class CloudMusic():
     def save_file(self, name, data):
         filepath = self.get_storage_dir(f'cloud_music.{name}')
         save_json(filepath, data)
+    
+    def read_file(self, name):
+        filepath = self.get_storage_dir(f'cloud_music.{name}')
+        if os.path.exists(filepath):
+            return load_json(filepath)
 
     def netease_image_url(self, url, size=200):
         return f'{url}?param={size}y{size}'

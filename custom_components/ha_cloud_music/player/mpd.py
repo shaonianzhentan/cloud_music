@@ -53,6 +53,7 @@ class MediaPlayerMPD():
 
         except Exception as e:
             print(e)
+            self._is_connected = False
 
         # 递归调用自己
         self.timer = threading.Timer(3, self.update)

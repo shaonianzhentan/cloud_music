@@ -122,9 +122,12 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
         )
         playlist = cloud_music.playlist
         for index, item in enumerate(playlist):
+            title = item.song
+            if not item.singer:
+                title = f'{title} - {item.singer}'
             library_info.children.append(
                 BrowseMedia(
-                    title=f'{item.song} - {item.singer}',
+                    title=title,
                     media_class=MEDIA_CLASS_MUSIC,
                     media_content_type=MEDIA_TYPE_PLAYLIST,
                     media_content_id=f"type=index&index={index}",
