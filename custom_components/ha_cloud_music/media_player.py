@@ -47,6 +47,7 @@ from homeassistant.const import (
 from .utils import parse_query
 from .browse_media import async_browse_media
 from .player.websocket import MediaPlayerWebSocket
+from .player.mpd import MediaPlayerMPD
 from .cloud_music import CloudMusic
 
 from .manifest import manifest
@@ -66,7 +67,8 @@ async def async_setup_entry(
 ) -> None:
     data = entry.data
     api_url = data.get(CONF_URL)
-    cloud_music = CloudMusic(api_url)
+    uid = data.get('uid')
+    cloud_music = CloudMusic(api_url, uid)
     media_player = CloudMusicMediaPlayer(hass, cloud_music, { **data, **entry.options })
     hass.data[DOMAIN] = media_player
     async_add_entities([ media_player ], True)
@@ -89,14 +91,17 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         self._attr_unique_id = manifest.documentation
         self._attr_state =  STATE_OFF
         self._attr_volume_level = 1
+        self._attr_repeat = 'all'
         
         # source media player
-        self._player = MediaPlayerWebSocket(self)
+        self._player = None
         self.cloud_music = cloud_music
         if len(cloud_music.playlist) > 0:
             hass.async_create_task(self.async_load_music())
             self._attr_state =  STATE_PAUSED
-
+        
+        hass.async_create_task(self.async_select_source('MPD'))
+        
     @property
     def device_info(self):
         return {
@@ -119,6 +124,14 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
     async def async_select_source(self, source):
         if self._attr_source_list.count(source) > 0:
             self._attr_source = source
+            # 停止播放器
+            if self._player is not None:
+                await self._player.async_media_stop()
+            # 加载播放器
+            if source == 'MPD':
+                self._player = MediaPlayerMPD(self)
+            elif source == '网页浏览器':
+                self._player = MediaPlayerWebSocket(self)
 
     async def async_select_source_mode(self, mode):
         if self._attr_sound_mode_list.count(mode) > 0:
@@ -205,7 +218,8 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
 
     # 更新属性
     async def async_update(self):
-        print('更新')
+        pass
+        # print('更新')
 
     # 加载音乐
     async def async_load_music(self, is_play=False):

@@ -130,7 +130,7 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
                     media_content_id=f"type=index&index={index}",
                     can_play=True,
                     can_expand=False,
-                    thumbnail=item.picUrl
+                    thumbnail=item.thumbnail
                 )
             )
     elif media_content_type == 'cloud':
@@ -144,7 +144,6 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
             children=[],
         )
         playlist = await cloud_music.async_get_cloud()
-        cloud_data = []
         for index, music_info in enumerate(playlist):
             library_info.children.append(
                 BrowseMedia(
@@ -154,12 +153,9 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
                     media_content_id=f"type=cloud&index={index}",
                     can_play=True,
                     can_expand=False,
-                    thumbnail=music_info.picUrl
+                    thumbnail=music_info.thumbnail
                 )
             )
-            # 记录云数据
-            cloud_data.append(music_info.to_dict())
-        cloud_music.save_file('cloud', cloud_data)
     elif media_content_type == 'created':
         return await user_playlist(cloud_music, media_content_id, 'all')
     elif media_content_type == 'radio':

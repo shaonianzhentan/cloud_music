@@ -6,7 +6,8 @@ from homeassistant.util.json import load_json, save_json
 
 class CloudMusic():
 
-    def __init__(self, url) -> None:
+    def __init__(self, url, uid) -> None:
+        self.uid = uid
         self.api_url = url.strip('/')
         self.playlist_id = ''
         self.playindex = 0
@@ -45,7 +46,7 @@ class CloudMusic():
         return await http_get(self.api_url + url, self.cookie)
 
     def save_file(self, name, data):
-        filepath = self.get_storage_dir('cloud_music.{name}')
+        filepath = self.get_storage_dir(f'cloud_music.{name}')
         save_json(filepath, data)
 
     def netease_image_url(self, url, size=200):
@@ -127,9 +128,21 @@ class CloudMusic():
                 or music_info.source == MusicSource.DJRADIO.value \
                 or music_info.source == MusicSource.CLOUD.value:
                 # 获取播放链接
-                res = await http_get(self.api_url + f'/song/url?id={music_info.id}', self.cookie)
+                res = await self.netease_cloud_music(f'/song/url?id={music_info.id}')
                 url = res['data'][0]['url']
-                music_info._url = url
+                if url is not None:
+                    music_info._url = url
+                else:
+                    # 从云盘里获取
+                    res = await self.netease_cloud_music(f'/user/cloud')
+                    filter_list = list(filter(lambda x:x['simpleSong']['id'] == music_info.id, res['data']))
+                    if len(filter_list) > 0:
+                        music_info.id = filter_list[0]['songId']
+                        res = await self.netease_cloud_music(f'/song/url?id={music_info.id}')
+                        music_info._url = res['data'][0]['url']
+                    else:
+                        # 全网音乐搜索
+                        pass
 
            return music_info
 
@@ -165,7 +178,7 @@ class CloudMusic():
             album = item['al']['name'] 
             duration = item['dt']
             url = ''
-            picUrl = self.netease_image_url(item['al'].get('picUrl', 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg'))
+            picUrl = item['al'].get('picUrl', 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg')
             music_info = MusicInfo(id, song, singer, album, duration, url, picUrl, MusicSource.PLAYLIST.value)
             return music_info
         
@@ -183,7 +196,7 @@ class CloudMusic():
             album = item['dj']['brand']
             duration = mainSong['duration']
             url = ''
-            picUrl = self.netease_image_url(item['coverUrl'])
+            picUrl = item['coverUrl']
             music_info = MusicInfo(id, song, singer, album, duration, url, picUrl, MusicSource.DJRADIO.value)
             return music_info
         
@@ -200,7 +213,7 @@ class CloudMusic():
             album = item['al']['name']
             duration = item['dt']
             url = ''
-            picUrl = self.netease_image_url(res['artist']['picUrl'])
+            picUrl = res['artist']['picUrl']
             music_info = MusicInfo(id, song, singer, album, duration, url, picUrl, MusicSource.ARTISTS.value)
             return music_info
         
@@ -210,7 +223,6 @@ class CloudMusic():
     async def async_get_cloud(self):
         res = await self.netease_cloud_music('/user/cloud')
         def format_playlist(item):
-            print(item)
             id = item['songId']
             singer = ''
             duration = ''
@@ -228,7 +240,7 @@ class CloudMusic():
                     album = al.get('name')
                 ar = simpleSong.get('ar')
                 if ar is not None and len(ar) > 0:
-                    singer = ar[0].get('name')
+                    singer = ar[0].get('name', '')
 
             music_info = MusicInfo(id, song, singer, album, duration, url, picUrl, MusicSource.CLOUD.value)
             return music_info

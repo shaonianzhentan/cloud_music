@@ -24,7 +24,11 @@
             "user": {
                 "title": "服务配置",
                 "description": "配置",
-                "data": {}
+                "data": {
+                    "mpd_host": "MPD服务地址",
+                    "mpd_port": "MPD服务端口",
+                    "mpd_password": "MPD服务密码"
+                }
             }
         },
         "error": {}
