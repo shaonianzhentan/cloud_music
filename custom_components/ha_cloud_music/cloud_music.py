@@ -110,6 +110,19 @@ class CloudMusic():
         # 保存文件到本地
         self.save_playlist(playlist_id, MusicSource.CLOUD.value)
 
+    async def async_load_daily(self, playindex=0):
+        playlist_id = 'daily'
+        # 如果相同歌单
+        if self.playlist_id == playlist_id:
+            self.playindex = playindex
+            return
+        # 获取歌单音乐
+        self.playlist_id = playlist_id
+        self.playindex = playindex
+        self._playlist = await self.async_get_dailySongs()
+        # 保存文件到本地
+        self.save_playlist(playlist_id, MusicSource.PLAYLIST.value)
+
     # 保存播放记录
     def save_playlist(self, playlist_id, source):
         playlist = []
@@ -251,3 +264,19 @@ class CloudMusic():
             return music_info
         
         return list(map(format_playlist, res['data']))
+
+    # 获取每日推荐歌曲
+    async def async_get_dailySongs(self):
+        res = await self.netease_cloud_music('/recommend/songs')
+        def format_playlist(item):
+            id = item['id']
+            song = item['name']
+            singer = item['ar'][0]['name']
+            album = item['al']['name'] 
+            duration = item['dt']
+            url = ''
+            picUrl = item['al'].get('picUrl', 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg')
+            music_info = MusicInfo(id, song, singer, album, duration, url, picUrl, MusicSource.PLAYLIST.value)
+            return music_info
+        
+        return list(map(format_playlist, res['data']['dailySongs']))

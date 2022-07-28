@@ -55,7 +55,7 @@ CHILD_TYPE_MEDIA_CLASS = {
 _LOGGER = logging.getLogger(__name__)
 
 from .browse.radio import radio_favorites, radio_playlist
-from .browse.playlist import playlist_all, playlist_toplist, user_playlist
+from .browse.playlist import playlist_all, playlist_toplist, playlist_recommend_resource, playlist_daily, user_playlist
 from .browse.artists import artists_favorites, artists_playlist
 
 async def async_browse_media(media_player, media_content_type, media_content_id):
@@ -67,6 +67,14 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
                 'title': '播放列表',
                 'type': 'playlist',
                 'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg'
+            },{
+                'title': '推荐歌曲',
+                'type': 'daily',
+                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg'
+            },{
+                'title': '推荐歌单',
+                'type': 'recommend_resource',
+                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg'
             },{
                 'title': '我的云盘',
                 'type': 'cloud',
@@ -136,6 +144,29 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
                     thumbnail=item.thumbnail
                 )
             )
+    elif media_content_type == 'daily':
+        library_info = BrowseMedia(
+            media_class=MEDIA_CLASS_DIRECTORY,
+            media_content_id=f"type=daily&index=0",
+            media_content_type=MEDIA_TYPE_PLAYLIST,
+            title=media_content_id,
+            can_play=True,
+            can_expand=False,
+            children=[],
+        )
+        playlist = await cloud_music.async_get_dailySongs()
+        for index, music_info in enumerate(playlist):
+            library_info.children.append(
+                BrowseMedia(
+                    title=music_info.song,
+                    media_class=MEDIA_CLASS_MUSIC,
+                    media_content_type=MEDIA_TYPE_PLAYLIST,
+                    media_content_id=f"type=daily&index={index}",
+                    can_play=True,
+                    can_expand=False,
+                    thumbnail=music_info.thumbnail
+                )
+            )
     elif media_content_type == 'cloud':
         library_info = BrowseMedia(
             media_class=MEDIA_CLASS_DIRECTORY,
@@ -171,6 +202,8 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
         return await artists_playlist(cloud_music, media_content_id)
     elif media_content_type == 'toplist':
         return await playlist_toplist(cloud_music, media_content_id, 'all')
+    elif media_content_type == 'recommend_resource':
+        return await playlist_recommend_resource(cloud_music, media_content_id, 'all')
     elif media_content_type == 'all':
         return await playlist_all(cloud_music, media_content_id)
     return library_info

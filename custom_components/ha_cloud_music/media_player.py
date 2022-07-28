@@ -175,6 +175,8 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
                 await self.cloud_music.async_load_djradio(id, playindex)
             elif act == 'cloud':
                 await self.cloud_music.async_load_cloud(playindex)
+            elif act == 'daily':
+                await self.cloud_music.async_load_cloud(playindex)
             await self.async_load_music(True)
         else:
             await self._player.async_play_media(media_type, media_id)

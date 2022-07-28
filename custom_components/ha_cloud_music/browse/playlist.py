@@ -50,6 +50,33 @@ async def playlist_toplist(cloud_music, title, media_content_type):
         )
     return library_info
 
+
+# 每日推荐歌单
+async def playlist_recommend_resource(cloud_music, title, media_content_type):
+    library_info = BrowseMedia(
+        media_class=MEDIA_CLASS_DIRECTORY,
+        media_content_id='',
+        media_content_type=MEDIA_CLASS_TRACK,
+        title=title,
+        can_play=False,
+        can_expand=True,
+        children=[],
+    )
+    res = await cloud_music.netease_cloud_music('/recommend/resource')
+    for item in res['recommend']:
+        library_info.children.append(
+            BrowseMedia(
+                title=item['name'],
+                media_class=MEDIA_CLASS_PLAYLIST,
+                media_content_type=media_content_type,
+                media_content_id=f"title={quote(item['name'])}&id={item['id']}",
+                can_play=False,
+                can_expand=True,
+                thumbnail=cloud_music.netease_image_url(item['picUrl'])
+            )
+        )
+    return library_info
+
 # 歌单全部音乐
 async def playlist_all(cloud_music, url_query):
     query = parse_query(url_query)
@@ -90,7 +117,7 @@ async def user_playlist(cloud_music, title, media_content_type='all'):
         can_expand=False,
         children=[],
     )
-    res = await cloud_music.netease_cloud_music('/user/playlist?uid=47445304')
+    res = await cloud_music.netease_cloud_music(f'/user/playlist?uid={cloud_music.uid}')
     for item in res['playlist']:
         library_info.children.append(
             BrowseMedia(
