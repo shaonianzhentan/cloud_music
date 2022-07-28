@@ -89,7 +89,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
         self._attr_sound_mode_list = []
         self._attr_name = manifest.name
         self._attr_unique_id = manifest.documentation
-        self._attr_state =  STATE_OFF
+        self._attr_state =  STATE_ON
         self._attr_volume_level = 1
         self._attr_repeat = 'all'
         
@@ -176,7 +176,7 @@ class CloudMusicMediaPlayer(MediaPlayerEntity):
             elif act == 'cloud':
                 await self.cloud_music.async_load_cloud(playindex)
             elif act == 'daily':
-                await self.cloud_music.async_load_cloud(playindex)
+                await self.cloud_music.async_load_daily(playindex)
             await self.async_load_music(True)
         else:
             await self._player.async_play_media(media_type, media_id)

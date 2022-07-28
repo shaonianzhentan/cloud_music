@@ -55,7 +55,7 @@ CHILD_TYPE_MEDIA_CLASS = {
 _LOGGER = logging.getLogger(__name__)
 
 from .browse.radio import radio_favorites, radio_playlist
-from .browse.playlist import playlist_all, playlist_toplist, playlist_recommend_resource, playlist_daily, user_playlist
+from .browse.playlist import playlist_all, playlist_toplist, playlist_recommend_resource, user_playlist
 from .browse.artists import artists_favorites, artists_playlist
 
 async def async_browse_media(media_player, media_content_type, media_content_id):
@@ -66,15 +66,15 @@ async def async_browse_media(media_player, media_content_type, media_content_id)
             {
                 'title': '播放列表',
                 'type': 'playlist',
-                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg'
+                'thumbnail': 'https://www.home-assistant.io/images/favicon-192x192.png'
             },{
-                'title': '推荐歌曲',
+                'title': '每日推荐歌曲',
                 'type': 'daily',
-                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg'
+                'thumbnail': 'http://p4.music.126.net/wdBkD3VdOeida9OXw3gEfw==/109951164966664493.jpg'
             },{
-                'title': '推荐歌单',
+                'title': '每日推荐歌单',
                 'type': 'recommend_resource',
-                'thumbnail': 'http://p3.music.126.net/ik8RFcDiRNSV2wvmTnrcbA==/3435973851857038.jpg'
+                'thumbnail': 'https://p2.music.126.net/fL9ORyu0e777lppGU3D89A==/109951167206009876.jpg'
             },{
                 'title': '我的云盘',
                 'type': 'cloud',
