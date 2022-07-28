@@ -4,11 +4,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/Home-Assistant-%23049cdb)](https://www.home-assistant.io/)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-
 ![visit](https://visitor-badge.glitch.me/badge?page_id=shaonianzhentan.ha_cloud_music&left_text=visit)
-![forks](https://img.shields.io/github/forks/shaonianzhentan/ha_cloud_music)
-![stars](https://img.shields.io/github/stars/shaonianzhentan/ha_cloud_music)
-![license](https://img.shields.io/github/license/shaonianzhentan/ha_cloud_music)
 
 ## 安装方式
 
