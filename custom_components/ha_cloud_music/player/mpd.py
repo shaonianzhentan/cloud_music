@@ -123,13 +123,17 @@ class MediaPlayerMPD():
 
     async def async_media_stop(self):
         print('关闭MPD播放器')
-        self.timer.cancel()
+        try:
+            self.timer.cancel()        
+            if not self._is_connected:
+                return
         
-        if not self._is_connected:
-            return
-
-        self._client.stop()
-        self._client.disconnect()
+            self._client.stop()
+            self._client.disconnect()
+        except Exception as ex:
+            print(ex)
+        finally:
+            self._is_connected = False
 
     def _connect(self):
         try:
