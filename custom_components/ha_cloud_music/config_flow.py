@@ -17,12 +17,6 @@ from homeassistant.util.json import save_json
 
 DOMAIN = manifest.domain
 
-DATA_SCHEMA = vol.Schema({
-    vol.Required(CONF_URL): str,
-    vol.Required(CONF_USERNAME): str,
-    vol.Required(CONF_PASSWORD): str
-})
-
 class SimpleConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
@@ -56,9 +50,16 @@ class SimpleConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=DOMAIN, data=user_input)
             else:
                 errors['base'] = 'login_failed'
+        else:
+            user_input = {}
 
+        DATA_SCHEMA = vol.Schema({
+            vol.Required(CONF_URL, default=user_input.get(CONF_URL)): str,
+            vol.Required(CONF_USERNAME, default=user_input.get(CONF_USERNAME)): str,
+            vol.Required(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD)): str
+        })
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
-        
+
     @staticmethod
     @callback
     def async_get_options_flow(entry: ConfigEntry):
